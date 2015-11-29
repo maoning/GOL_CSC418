@@ -1,20 +1,20 @@
 Grid = function() {
     return {
         // map size
-        x : 20,
-        y : 20,
-        z : 20,
+        x : 100,
+        y : 100,
+        z : 100,
 
         // block dimensions
         cube_w:Math.floor(WIDTH/this.x),
         cube_h:Math.floor(HEIGHT/this.y),
-        cube_d:Math.floor(400/this.z),
+        cube_d:Math.floor(DEPTH/this.z),
 
         // thresholds
         th : {
-            lonely: 1,
-            breed: 5,
-            overcrowd: 8
+            lonely: $('#lonely').val(),
+            breed: $('#breed').val(),
+            overcrowd: $('#overcrowd').val()
         },
 
         // the actual map
@@ -38,20 +38,25 @@ Grid = function() {
             // set the width and height of cubes
             this.cube_w=Math.floor(WIDTH/this.x);
             this.cube_h=Math.floor(HEIGHT/this.y);
-            this.cube_d=Math.floor(400/this.z);
+            this.cube_d=Math.floor(DEPTH/this.z);
 
             var i = 0;
             var j = 0;
             var k = 0;
 
+            // number of cells to generate in each direction
+            this.pos_x = this.x * 2;
+            this.pos_y = this.y;
+            this.pos_z = this.z;
+
             // build out the (empty) map
-            for (i=0;i<this.x;i++) {
+            for (i=0;i<this.pos_x;i++) {
                 // add the sub array
                 this.map[i] = [];
-                for (j=0;j<this.y;j++) {
+                for (j=0;j<this.pos_y;j++) {
                     // add the sub array
                     this.map[i][j] = [];
-                    for (k=0;k<this.z;k++) {
+                    for (k=0;k<this.pos_z;k++) {
                         // set the position to 0
                         this.map[i][j][k] = false;
 
@@ -125,13 +130,13 @@ Grid = function() {
             var j = 0;
             var k = 0;
 
-            for (i=0;i<this.x;i++) {
+            for (i=0;i<this.pos_x;i++) {
                 // add the sub array
                 newmap[i] = [];
-                for (j=0;j<this.y;j++) {
+                for (j=0;j<this.pos_y;j++) {
                     // add the sub array
                     newmap[i][j] = [];
-                    for (k=0;k<this.z;k++) {
+                    for (k=0;k<this.pos_z;k++) {
                         // set the position to 0
                         newmap[i][j][k] = false;
 
@@ -241,9 +246,9 @@ Grid = function() {
             var k = 0;
 
             // build out the (empty) map
-            for (i=0;i<this.x;i++) {
-                for (j=0;j<this.y;j++) {
-                    for (k=0;k<this.z;k++) {
+            for (i=0;i<this.pos_x;i++) {
+                for (j=0;j<this.pos_y;j++) {
+                    for (k=0;k<this.pos_z;k++) {
                         cell = this.is_alive(i,j,k);
 
                         if (cell) {
@@ -260,12 +265,13 @@ var stage = $('#gameoflife');
 var pause = $('#pause');
 
 // set the scene size
-var WIDTH = 400,
-    HEIGHT = 400;
+var WIDTH = 800,
+    HEIGHT = 800,
+    DEPTH = 800;
 
 // set some camera attributes
 var VIEW_ANGLE = 45,
-    ASPECT = WIDTH / HEIGHT,
+    ASPECT = WIDTH*1.5 / HEIGHT,
     NEAR = 0.1,
     FAR = 10000;
 
@@ -273,6 +279,7 @@ var renderer;
 var camera;
 var scene;
 var target;
+// var injectVirus = false;
 
 function init() {
     // create a canvas renderer, camera
@@ -286,17 +293,19 @@ function init() {
 
     scene = new THREE.Scene();
 
-    target = new THREE.Vector3( Math.floor(WIDTH/2), Math.floor(HEIGHT/2), 200 );
+    target = new THREE.Vector3( Math.floor(WIDTH), Math.floor(HEIGHT/2), Math.floor(DEPTH/2) );
     target.normalize;
 
     // the camera starts at 0,0,0 so pull it back
     camera.position.y = Math.floor(HEIGHT/2);
-    camera.position.z = 800;
+    // camera.position.z = 800;
+    camera.position.z = Math.floor(DEPTH*4);;
+
 
     camera.lookAt( target );
 
     // start the renderer
-    renderer.setSize(WIDTH, HEIGHT);
+    renderer.setSize(WIDTH*1.5, HEIGHT);
     renderer.setClearColor(0xEEEEEE);
     //document.body.appendChild( renderer.domElement );
 
@@ -312,6 +321,48 @@ function init() {
 }
 
 $('#size').change(function () {
+    // stop the game
+    Grid.pause();
+
+    // get rid of the old grid
+    Grid.clear_grid();
+    delete Grid.map;
+    // render the empty grid
+    renderer.render(scene, camera);
+
+    // re-initialize
+    Grid.init();
+});
+
+$('#lonely').change(function () {
+    // stop the game
+    Grid.pause();
+
+    // get rid of the old grid
+    Grid.clear_grid();
+    delete Grid.map;
+    // render the empty grid
+    renderer.render(scene, camera);
+
+    // re-initialize
+    Grid.init();
+});
+
+$('#breed').change(function () {
+    // stop the game
+    Grid.pause();
+
+    // get rid of the old grid
+    Grid.clear_grid();
+    delete Grid.map;
+    // render the empty grid
+    renderer.render(scene, camera);
+
+    // re-initialize
+    Grid.init();
+});
+
+$('#overcrowd').change(function () {
     // stop the game
     Grid.pause();
 
@@ -345,8 +396,8 @@ var targetYRotation = 0;
 var targetYRotationOnMouseDown = 0;
 var mouseXOnMouseDown;
 var mouseYOnMouseDown;
-var windowHalfX = Math.floor(WIDTH / 2);
-var windowHalfY = Math.floor(HEIGHT / 2);
+var windowHalfX = Math.floor(WIDTH);
+var windowHalfY = Math.floor(HEIGHT);
 
 // animation
 function onDocumentMouseDown( event ) {
@@ -414,17 +465,17 @@ function renderAnim() {
     var t = targetRotation;
     var ty = targetYRotation;
     if (t!=0 && ty!= 0) {
-        camera.position.x = 800 * Math.sin( t * Math.PI / 360 );
-        camera.position.y = 800 * Math.sin( ty * Math.PI / 360 );
-        camera.position.z = 800 * Math.cos( t * Math.PI / 360 );
+        camera.position.x = WIDTH * Math.sin( t * Math.PI / 360 );
+        camera.position.y = HEIGHT * Math.sin( ty * Math.PI / 360 );
+        camera.position.z = (DEPTH*4) * Math.cos( t * Math.PI / 360 );
         camera.lookAt( target );
     } else if (t != 0) {
-        camera.position.x = 800 * Math.sin( t * Math.PI / 360 );
-        camera.position.z = 800 * Math.cos( t * Math.PI / 360 );
+        camera.position.x = WIDTH * Math.sin( t * Math.PI / 360 );
+        camera.position.z = (DEPTH*4) * Math.cos( t * Math.PI / 360 );
         camera.lookAt( target );
     } else if (ty != 0) {
-        camera.position.y = 800 * Math.sin( ty * Math.PI / 360 );
-        camera.position.z = 800 * Math.cos( ty * Math.PI / 360 );
+        camera.position.y = HEIGHT * Math.sin( ty * Math.PI / 360 );
+        camera.position.z = (DEPTH*4) * Math.cos( ty * Math.PI / 360 );
         camera.lookAt( target );
     }
 

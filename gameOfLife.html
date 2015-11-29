@@ -17,25 +17,7 @@ body {
 </style>
 </head>
 <body>
-  <h1>Conway's Game Of Life... Now in 3D!</h1>
-  <p>
-    Conway's Game of life is... well it's <a href="http://www.bitstorm.org/gameoflife/">this</a>.
-    Obviously, it's pretty two dimensional, and that implementation is very
-    "written in java". Now there's all this fun "HTML5" stuff like canvases and
-    the like, so I figure that it's about time I figure out how they work.
-  </p>
-  <p>
-    Now, of course, with the extra dimension, the math will have to change.
-    Experiment time!
-  </p>
-  <p>
-    <strong>Rules:</strong>
-    <ul>
-      <li>Cells (in this case, cubes) with only 1 or less neighbours die, as if by lonliness.</li>
-      <li>If 5 cells surround an empty cell, they breed and fill it.</li>
-      <li>If a cell has 8 or more neighbours, it dies from overcrowding.</li>
-    </ul>
-  </p>
+
   <div id="gameoflife" style="border:1px solid #CCCCCC; margin:20px;"></div>
   <div id="controls">
     Map size:
@@ -53,18 +35,46 @@ body {
       <option value="100">Fast (10 generations/second)</option>
       <option value="50">Hyper (20 generations/second)</option>
     </select>
+    Lonely Count:
+    <select name="lonely" id="lonely">
+      <option value="0">0 cell</option>
+      <option value="1">1 cell</option>
+      <option selected="selected" value="2">2 cells</option>
+      <option value="3">3 cells</option>
+      <option value="4">4 cells</option>
+      <option value="5">5 cells</option>
+      <option value="6">6 cells</option>
+      <option value="7">7 cells</option>
+      <option value="8">8 cells</option>
+    </select>
+    Breed Count:
+    <select name="breed" id="breed">
+      <option value="0">0 cell</option>
+      <option value="1">1 cell</option>
+      <option value="2">2 cells</option>
+      <option value="3">3 cells</option>
+      <option selected="selected" value="4">4 cells</option>
+      <option value="5">5 cells</option>
+      <option value="6">6 cells</option>
+      <option value="7">7 cells</option>
+      <option value="8">8 cells</option>
+    </select>
+    Overcrowded Count:
+    <select name="overcrowd" id="overcrowd">
+      <option value="0">0 cell</option>
+      <option value="1">1 cell</option>
+      <option value="2">2 cells</option>
+      <option value="3">3 cells</option>
+      <option value="4">4 cells</option>
+      <option selected="selected" value="5">5 cells</option>
+      <option value="6">6 cells</option>
+      <option value="7">7 cells</option>
+      <option value="8">8 cells</option>
+    </select>
+
     <input type="button" id="pause" value="Stop" />
     <input type="button" id="reset" value="Randomize/Reset" />
+    <!-- <input type="button" id="injectVirus" value="Inject Virus" /> -->
   </div>
-  <p>
-    This was a fun experiment, created by <a href="http://www.samuellevy.com/">Samuel Levy</a>.
-    You can get the source code on <a href="https://github.com/samlev/3DGameOfLife">Git Hub</a>.
-  </p>
-  <p>
-    I used <a href="http://jquery.com/">jQuery</a>, <a href="https://github.com/mrdoob/three.js/">Three.js</a>,
-    and <a href="http://paulirish.com/2011/requestanimationframe-for-smart-animating/">RequestAnimationFrame</a>
-    to build this.
-  </p>
-  <p>* May be very slow... use at your own risk</p>
 </body>
 </html>
