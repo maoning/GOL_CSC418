@@ -66,13 +66,13 @@ Grid = function() {
                         }
                     }
                 }
-            }
+          }
 
-            // draw!
-            renderer.render(scene, camera);
+          // draw!
+          renderer.render(scene, camera);
 
-            // start the game
-            this.start();
+          // start the game
+          this.start();
         },
         /** Gets the 'life' value of a position on the map
          * @param x The 'x' position
@@ -80,48 +80,47 @@ Grid = function() {
          * @param z The 'z' position
          * @returns {bool} true if alive, false if dead
          */
-        is_alive: function (x,y,z) {
-            return this.map[x][y][z];
-        },
-        /** Gets the number of living neighbours
-         * @param x The 'x' position
-         * @param y The 'y' position
-         * @param z The 'z' position
-         * @returns {int} The count of living neighbours
-         */
-        living_neighbours : function (x,y,z) {
-            // get the min and max to search, respecting the grid boundries
-            var min_x = (x > 0 ? x-1 : x);
-            var max_x = (x < this.x-1 ? x+1: x);
-            var min_y = (y > 0 ? y-1 : y);
-            var max_y = (y < this.y-1 ? y+1: y);
-            var min_z = (z > 0 ? z-1 : z);
-            var max_z = (z < this.z-1 ? z+1: z);
+    is_alive : function(x, y, z) { return this.map[x][y][z]; },
+       /** Gets the number of living neighbours
+        * @param x The 'x' position
+        * @param y The 'y' position
+        * @param z The 'z' position
+        * @returns {int} The count of living neighbours
+        */
+    living_neighbours :
+        function(x, y, z) {
+          // get the min and max to search, respecting the grid boundries
+          var min_x = (x > 0 ? x - 1 : x);
+          var max_x = (x < this.x - 1 ? x + 1 : x);
+          var min_y = (y > 0 ? y - 1 : y);
+          var max_y = (y < this.y - 1 ? y + 1 : y);
+          var min_z = (z > 0 ? z - 1 : z);
+          var max_z = (z < this.z - 1 ? z + 1 : z);
 
-            // initialise the number of neighbors
-            var neighbours = 0;
+          // initialise the number of neighbors
+          var neighbours = 0;
 
-            // the ijk vars
-            var i = 0;
-            var j = 0;
-            var k = 0;
+          // the ijk vars
+          var i = 0;
+          var j = 0;
+          var k = 0;
 
-            // now perform the search
-            for (i=min_x;i<=max_x;i++) {
-                for (j=min_y;j<=max_y;j++) {
-                    for (k=min_z;k<=max_z;k++) {
-                        // ignore the item we're looking for neighbours for
-                        if (!(i==x && j==y && k==z)) {
-                            if (this.is_alive(i,j,k)) {
-                                neighbours ++ ;
-                            }
-                        }
-                    }
+          // now perform the search
+          for (i = min_x; i <= max_x; i++) {
+            for (j = min_y; j <= max_y; j++) {
+              for (k = min_z; k <= max_z; k++) {
+                // ignore the item we're looking for neighbours for
+                if (!(i == x && j == y && k == z)) {
+                  if (this.is_alive(i, j, k)) {
+                    neighbours++;
+                  }
                 }
+              }
             }
+          }
 
-            // return however many we found
-            return neighbours;
+          // return however many we found
+          return neighbours;
         },
         /** Gets the number of living neighbours
          * @param x The 'x' position
@@ -264,63 +263,82 @@ Grid = function() {
                 }
             }
 
-            // replace the map
-            delete this.map;
-            this.map = newmap;
+          // replace the map
+          delete this.map;
+          this.map = newmap;
 
-            // draw
-            renderer.render(scene, camera);
+          // draw
+          renderer.render(scene, camera);
 
-            if (this.run === true) {
-                // render again
-                this.timeout = setTimeout('Grid.render();',$('#speed').val());
-            }
+          if (this.run === true) {
+            // render again
+            this.timeout = setTimeout('Grid.render();', $('#speed').val());
+          }
         },
-        add_cell: function (x,y,z) {
-            if (!this.is_alive(x,y,z)) {
-                if (injectVirus == false) {
-                    var color = 0x000000;
-                    // set a base colour, which won't be black, and is somewhat based on position
-                    var color_r = (((Math.random() * (x/8))+(this.x/4)+(x/2))/this.x)*0xff;
-                    var color_g = (((Math.random() * (y/8))+(this.y/4)+(y/2))/this.y)*0xff;
-                    var color_b = (((Math.random() * (z/8))+(this.z/4)+(z/2))/this.z)*0xff;
+    add_cell :
+        function(x, y, z) {
+          if (!this.is_alive(x, y, z)) {
+            if (injectVirus == false) {
+                var color = 0x000000;
+                // set a base colour, which won't be black, and is somewhat based on
+                // position
+                var color_r = (Math.random() * x / this.x) * 0xf4 + 8;
+                var color_g = (Math.random() * y / this.y) * 0xf4 + 8;
+                var color_b = (Math.random() * z / this.z) * 0xf4 + 8;
 
-                    color = (color_r * 0x010000) + (color_g * 0x000100) + color_b;
-                } else {
-                    var color = 0x000000;
-                }
-
-                var geometry = new THREE.BoxGeometry( this.cube_w, this.cube_h, this.cube_d, 1, 1, 1 );
-                var material = new THREE.MeshBasicMaterial({ color: color } );
-                var newcell = new THREE.Mesh(geometry, material);
-
-                // Position the cube
-                newcell.position.x = Math.round(x*this.cube_w);
-                newcell.position.y = Math.round(y*this.cube_h);
-                newcell.position.z = Math.round(z*this.cube_d);
-
-                //console.log("Add cell, x: " + newcell.position.x + " y: " + newcell.position.y + " z: " + newcell.position.z);
-
-                // draw it
-                if (injectVirus == true) {
-                    newcell.infected = {lifespan:  $('#lifespan').val()};
-                    console.log(newcell.infected.lifespan);
-                    injectVirus = false;
-                };
-                newcell.overdraw = true
-                scene.add( newcell );
-
-                return newcell;
+                color = (color_r << 16) + (color_g << 8) + color_b;
+            } else {
+                var color = 0x000000;
             }
-            return false;
+            var geometry = new THREE.BoxGeometry(this.cube_w, this.cube_h,
+                                                 this.cube_d, 1, 1, 1);
+            // var material = new THREE.MeshLambertMaterial( {color: color} );
+            var material = new THREE.MeshPhongMaterial({
+              color : color,
+              ambient : color,
+              diffuse : 0xcccccc,
+              specular : 0xcccccc,
+              shininess : 100,
+              shading : THREE.FlatShading
+            });
+            var newcell = new THREE.Mesh(geometry, material);
+
+            // Position the cube
+            newcell.position.x = Math.round(x * this.cube_w);
+            newcell.position.y = Math.round(y * this.cube_h);
+            newcell.position.z = Math.round(z * this.cube_d);
+            // console.log("Add cell, x: " + newcell.position.x + " y: " +
+            // newcell.position.y + " z: " + newcell.position.z);
+            if (injectVirus == true) {
+                newcell.infected = {lifespan:  $('#lifespan').val()};
+                injectVirus = false;
+            };
+            // draw it
+            newcell.overdraw = true;
+            newcell.castShadow = true;
+            newcell.receiveShadow = true;
+            scene.add(newcell);
+
+            return newcell;
+          }
+
+          return false;
         },
         add_infectedcell: function (x,y,z) {
             if (!this.is_alive(x,y,z)) {
 
                 var color = 0x000000;
 
-                var geometry = new THREE.BoxGeometry( this.cube_w, this.cube_h, this.cube_d, 1, 1, 1 );
-                var material = new THREE.MeshBasicMaterial({ color: color } );
+                var geometry = new THREE.BoxGeometry( this.cube_w, this.cube_h,
+                                                      this.cube_d, 1, 1, 1 );
+                var material = new THREE.MeshPhongMaterial({
+                  color : color,
+                  ambient : color,
+                  diffuse : 0xcccccc,
+                  specular : 0xcccccc,
+                  shininess : 100,
+                  shading : THREE.FlatShading
+                });
                 var newcell = new THREE.Mesh(geometry, material);
 
                 // Position the cube
@@ -332,66 +350,64 @@ Grid = function() {
 
                 // draw it
                 newcell.infected = {lifespan:  $('#lifespan').val()};
-                console.log(newcell.infected.lifespan);
                 newcell.overdraw = true
+                newcell.castShadow = true;
+                newcell.receiveShadow = true;
                 scene.add( newcell );
 
                 return newcell;
             }
             return false;
         },
-        pause: function() {
-            if (this.run === true) {
-                this.run = false;
-                if (this.timeout !== false) {
-                    clearTimeout(this.timeout);
-                    this.timeout = false;
-                }
-                pause.val('Start');
-
-                pause.click(function () {
-                    Grid.start();
-                });
+    pause :
+        function() {
+          if (this.run === true) {
+            this.run = false;
+            if (this.timeout !== false) {
+              clearTimeout(this.timeout);
+              this.timeout = false;
             }
+            pause.val('Start');
+
+            pause.click(function() { Grid.start(); });
+          }
         },
+    start :
+        function() {
+          if (this.run === false) {
+            this.run = true;
+            pause.val('Pause');
+            pause.click(function() { Grid.pause(); });
 
-        start: function() {
-            if (this.run === false) {
-                this.run = true;
-                pause.val('Pause');
-                pause.click(function () {
-                    Grid.pause();
-                });
-
-                // clear the timeout
-                if (this.timeout !== false) {
-                    clearTimeout(this.timeout);
-                    this.timeout = false;
-                }
-                // start the game
-                this.timeout = setTimeout('Grid.render();',$('#speed').val());
+            // clear the timeout
+            if (this.timeout !== false) {
+              clearTimeout(this.timeout);
+              this.timeout = false;
             }
+            // start the game
+            this.timeout = setTimeout('Grid.render();', $('#speed').val());
+          }
         },
-        clear_grid: function() {
-            var i = 0;
-            var j = 0;
-            var k = 0;
+    clear_grid: function() {
+        var i = 0;
+        var j = 0;
+        var k = 0;
 
-            // build out the (empty) map
-            for (i=0;i<this.pos_x;i++) {
-                for (j=0;j<this.pos_y;j++) {
-                    for (k=0;k<this.pos_z;k++) {
-                        cell = this.is_alive(i,j,k);
+        // build out the (empty) map
+        for (i=0;i<this.pos_x;i++) {
+            for (j=0;j<this.pos_y;j++) {
+                for (k=0;k<this.pos_z;k++) {
+                    cell = this.is_alive(i,j,k);
 
-                        if (cell) {
-                            scene.remove(cell);
-                        }
+                    if (cell) {
+                        scene.remove(cell);
                     }
                 }
             }
         }
-    };
-} ();
+    }
+};
+}();
 
 var stage = $('#gameoflife');
 var pause = $('#pause');
@@ -414,56 +430,82 @@ var scene;
 var target;
 
 function init() {
-    // create a canvas renderer, camera
-    // and a scene
-    renderer = new THREE.WebGLRenderer();
-    camera = new THREE.PerspectiveCamera(
-                   VIEW_ANGLE,
-                   ASPECT,
-                   NEAR,
-                   FAR );
+  // create a canvas renderer, camera
+  // and a scene
+  renderer = new THREE.WebGLRenderer();
+  camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 
-    scene = new THREE.Scene();
+  scene = new THREE.Scene();
 
-    target = new THREE.Vector3( Math.floor(WIDTH), Math.floor(HEIGHT/2), Math.floor(DEPTH/2) );
-    target.normalize;
+  target =
+      new THREE.Vector3(Math.floor(WIDTH / 2), Math.floor(HEIGHT / 2), 200);
+  target.normalize;
 
-    // the camera starts at 0,0,0 so pull it back
-    camera.position.y = Math.floor(HEIGHT/2);
-    // camera.position.z = 800;
-    camera.position.z = Math.floor(DEPTH*4);;
+  // the camera starts at 0,0,0 so pull it back
+  camera.position.y = Math.floor(HEIGHT / 2);
+  camera.position.z = 2000;
+  camera.lookAt(target);
 
+  // start the renderer
+  renderer.setSize(WIDTH*1.5, HEIGHT);
+  renderer.setClearColor(0xEEEEEE);
+  // document.body.appendChild( renderer.domElement );
 
-    camera.lookAt( target );
+  renderer.shadowMapEnabled = true;
+  renderer.shadowMapType = THREE.PCFSoftShadowMap;
 
-    // start the renderer
-    renderer.setSize(WIDTH*1.5, HEIGHT);
-    renderer.setClearColor(0xEEEEEE);
-    //document.body.appendChild( renderer.domElement );
+  // attach the render-supplied DOM element
+  stage.append(renderer.domElement);
 
-    // attach the render-supplied DOM element
-    stage.append(renderer.domElement);
+  // create the ground plane
+  var planeGeometry = new THREE.PlaneGeometry(2000, 2000, 1, 1);
+  var planeMaterial = new THREE.MeshLambertMaterial({color : 0xc0c0c0});
+  var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+  // rotate and position the plane
+  plane.rotation.x = -0.5 * Math.PI;
+  plane.position.x = 0;
+  plane.position.y = -250;
+  plane.position.z = 0;
+  // add shadows
+  plane.receiveShadow = true;
+  // add the plane to the scene
+  scene.add(plane);
 
-    Grid.init();
+  // add ambient light
+  var light = new THREE.AmbientLight(0xcacaca); // soft white light
+  scene.add(light);
 
-    animate();
-    renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
-    renderer.domElement.addEventListener( 'touchstart', onDocumentTouchStart, false );
-    renderer.domElement.addEventListener( 'touchmove', onDocumentTouchMove, false );
+  // add spotlight for the shadows
+  var spotLight = new THREE.SpotLight(0xcccccc);
+  spotLight.position.set(500, 500, 500);
+  spotLight.lookAt(plane);
+  spotLight.castShadow = true;
+  spotLight.shadowDarkness = 0.5;
+  spotLight.shadowCameraVisible = true;
+  spotLight.shadowCameraNear = true;
+  scene.add(spotLight);
+
+  Grid.init();
+  animate();
+
+  renderer.domElement.addEventListener('mousedown', onDocumentMouseDown, false);
+  renderer.domElement.addEventListener('touchstart', onDocumentTouchStart,
+                                       false);
+  renderer.domElement.addEventListener('touchmove', onDocumentTouchMove, false);
 }
 
-$('#size').change(function () {
-    // stop the game
-    Grid.pause();
+$('#size').change(function() {
+  // stop the game
+  Grid.pause();
 
-    // get rid of the old grid
-    Grid.clear_grid();
-    delete Grid.map;
-    // render the empty grid
-    renderer.render(scene, camera);
+  // get rid of the old grid
+  Grid.clear_grid();
+  delete Grid.map;
+  // render the empty grid
+  renderer.render(scene, camera);
 
-    // re-initialize
-    Grid.init();
+  // re-initialize
+  Grid.init();
 });
 
 $('#lonely').change(function () {
@@ -511,15 +553,14 @@ $('#overcrowd').change(function () {
 $('#reset').click(function () {
     // stop the game
     Grid.pause();
+  // get rid of the old grid
+  Grid.clear_grid();
+  delete Grid.map;
+  // render the empty grid
+  renderer.render(scene, camera);
 
-    // get rid of the old grid
-    Grid.clear_grid();
-    delete Grid.map;
-    // render the empty grid
-    renderer.render(scene, camera);
-
-    // re-initialize
-    Grid.init();
+  // re-initialize
+  Grid.init();
 });
 
 $('#injectVirus').click(function () {
@@ -536,66 +577,68 @@ var windowHalfX = Math.floor(WIDTH);
 var windowHalfY = Math.floor(HEIGHT);
 
 // animation
-function onDocumentMouseDown( event ) {
-	event.preventDefault();
+function onDocumentMouseDown(event) {
+  event.preventDefault();
 
-	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-	document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+  document.addEventListener('mousemove', onDocumentMouseMove, false);
+  document.addEventListener('mouseup', onDocumentMouseUp, false);
 
-	mouseXOnMouseDown = event.clientX - windowHalfX;
-	targetRotationOnMouseDown = targetRotation;
-	mouseYOnMouseDown = event.clientY - windowHalfY;
-	targetYRotationOnMouseDown = targetYRotation;
+  mouseXOnMouseDown = event.clientX - windowHalfX;
+  targetRotationOnMouseDown = targetRotation;
+  mouseYOnMouseDown = event.clientY - windowHalfY;
+  targetYRotationOnMouseDown = targetYRotation;
 }
 
-function onDocumentMouseMove( event ) {
-	mouseX = event.clientX - windowHalfX;
-	targetRotation = targetRotationOnMouseDown - ( mouseX - mouseXOnMouseDown ) * 0.5;
+function onDocumentMouseMove(event) {
+  mouseX = event.clientX - windowHalfX;
+  targetRotation =
+      targetRotationOnMouseDown - (mouseX - mouseXOnMouseDown) * 0.5;
 
-	mouseY = event.clientY - windowHalfY;
-	targetYRotation = targetYRotationOnMouseDown + ( mouseY - mouseYOnMouseDown ) * 0.3;
+  mouseY = event.clientY - windowHalfY;
+  targetYRotation =
+      targetYRotationOnMouseDown + (mouseY - mouseYOnMouseDown) * 0.3;
 }
 
-function onDocumentMouseUp( event ) {
-	document.removeEventListener( 'mousemove', onDocumentMouseMove, false );
-	document.removeEventListener( 'mouseup', onDocumentMouseUp, false );
+function onDocumentMouseUp(event) {
+  document.removeEventListener('mousemove', onDocumentMouseMove, false);
+  document.removeEventListener('mouseup', onDocumentMouseUp, false);
 }
 
-function onDocumentMouseOut( event ) {
-	document.removeEventListener( 'mousemove', onDocumentMouseMove, false );
-	document.removeEventListener( 'mouseup', onDocumentMouseUp, false );
+function onDocumentMouseOut(event) {
+  document.removeEventListener('mousemove', onDocumentMouseMove, false);
+  document.removeEventListener('mouseup', onDocumentMouseUp, false);
 }
 
-function onDocumentTouchStart( event ) {
-	if ( event.touches.length == 1 ) {
-		event.preventDefault();
+function onDocumentTouchStart(event) {
+  if (event.touches.length == 1) {
+    event.preventDefault();
 
-		mouseXOnMouseDown = event.touches[ 0 ].pageX - windowHalfX;
-		targetRotationOnMouseDown = targetRotation;
+    mouseXOnMouseDown = event.touches[0].pageX - windowHalfX;
+    targetRotationOnMouseDown = targetRotation;
 
-
-        mouseYOnMouseDown = event.touches[ 0 ].pageY - windowHalfY;
-        targetYRotationOnMouseDown = targetYRotation;
-	}
+    mouseYOnMouseDown = event.touches[0].pageY - windowHalfY;
+    targetYRotationOnMouseDown = targetYRotation;
+  }
 }
 
-function onDocumentTouchMove( event ) {
-	if ( event.touches.length == 1 ) {
-		event.preventDefault();
+function onDocumentTouchMove(event) {
+  if (event.touches.length == 1) {
+    event.preventDefault();
 
-		mouseX = event.touches[ 0 ].pageX - windowHalfX;
-		targetRotation = targetRotationOnMouseDown + ( mouseX - mouseXOnMouseDown ) * 0.5;
+    mouseX = event.touches[0].pageX - windowHalfX;
+    targetRotation =
+        targetRotationOnMouseDown + (mouseX - mouseXOnMouseDown) * 0.5;
 
-        mouseY = event.touches[ 0 ].pageY - windowHalfY;
-        targetYRotation = targetYRotationOnMouseDown - ( mouseY - mouseYOnMouseDown ) * 0.3;
-	}
+    mouseY = event.touches[0].pageY - windowHalfY;
+    targetYRotation =
+        targetYRotationOnMouseDown - (mouseY - mouseYOnMouseDown) * 0.3;
+  }
 }
 
 function animate() {
-	requestAnimationFrame( animate );
-	renderAnim();
+  requestAnimationFrame(animate);
+  renderAnim();
 }
-
 
 function renderAnim() {
     var t = targetRotation;
@@ -618,6 +661,4 @@ function renderAnim() {
 	renderer.render( scene, camera );
 }
 
-$(document).ready(function () {
-    init();
-});
+$(document).ready(function() { init(); });
