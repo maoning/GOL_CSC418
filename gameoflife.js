@@ -1,64 +1,71 @@
 Grid = function() {
-  return {
-    // map size
-    x : 4000,
-    y : 4000,
-    z : 4000,
+    return {
+        // map size
+        x : 100,
+        y : 100,
+        z : 100,
 
         // block dimensions
-    cube_w : Math.floor(WIDTH / this.x),
-    cube_h : Math.floor(HEIGHT / this.y),
-    cube_d : Math.floor(400 / this.z),
+        cube_w:Math.floor(WIDTH/this.x),
+        cube_h:Math.floor(HEIGHT/this.y),
+        cube_d:Math.floor(DEPTH/this.z),
 
-             // thresholds
-    th : {lonely : 1, breed : 2, overcrowd : 3},
+        // thresholds
+        th : {
+            lonely: $('#lonely').val(),
+            breed: $('#breed').val(),
+            overcrowd: $('#overcrowd').val()
+        },
 
-         // the actual map
-    map : [],
+        // the actual map
+        map: [],
 
-    run : false,
-    timeout : false,
+        run:false,
+        timeout:false,
 
-              // functions!!!
-              /** Initializes the map */
-    init :
-        function() {
-          // clear the map
-          this.map = [];
+        // functions!!!
+        /** Initializes the map */
+        init: function() {
+            // clear the map
+            this.map = [];
 
-          // set the new size
-          var size = 5; //$('#size').val();
-          this.x = size;
-          this.y = size;
-          this.z = size;
+            // set the new size
+            var size = $('#size').val();
+            this.x = size;
+            this.y = size;
+            this.z = size;
 
-          // set the width and height of cubes
-          this.cube_w = Math.floor(WIDTH / this.x);
-          this.cube_h = Math.floor(HEIGHT / this.y);
-          this.cube_d = Math.floor(400 / this.z);
+            // set the width and height of cubes
+            this.cube_w=Math.floor(WIDTH/this.x);
+            this.cube_h=Math.floor(HEIGHT/this.y);
+            this.cube_d=Math.floor(DEPTH/this.z);
 
-          var i = 0;
-          var j = 0;
-          var k = 0;
+            var i = 0;
+            var j = 0;
+            var k = 0;
 
-          // build out the (empty) map
-          for (i = 0; i < this.x; i++) {
-            // add the sub array
-            this.map[i] = [];
-            for (j = 0; j < this.y; j++) {
-              // add the sub array
-              this.map[i][j] = [];
-              for (k = 0; k < this.z; k++) {
-                // set the position to 0
-                this.map[i][j][k] = false;
+            // number of cells to generate in each direction
+            this.pos_x = this.x * 2;
+            this.pos_y = this.y;
+            this.pos_z = this.z;
 
-                // randomly decide if we should populate this cell (about 5% of
-                // cells will be populated)
-                if (Math.round(Math.random() * 20) == 1) {
-                  this.map[i][j][k] = this.add_cell(i, j, k);
+            // build out the (empty) map
+            for (i=0;i<this.pos_x;i++) {
+                // add the sub array
+                this.map[i] = [];
+                for (j=0;j<this.pos_y;j++) {
+                    // add the sub array
+                    this.map[i][j] = [];
+                    for (k=0;k<this.pos_z;k++) {
+                        // set the position to 0
+                        this.map[i][j][k] = false;
+
+                        // randomly decide if we should populate this cell (about 5% of cells will be populated)
+                        if (Math.round(Math.random()*20)==1) {
+                            this.map[i][j][k] = this.add_cell(i,j,k);
+                        }
+                    }
                 }
-              }
-            }
           }
 
           // draw!
@@ -122,13 +129,13 @@ Grid = function() {
           var i = 0;
           var j = 0;
           var k = 0;
-          for (i = 0; i < this.x; i++) {
+          for (i = 0; i < this.pos_x; i++) {
             // add the sub array
             newmap[i] = [];
-            for (j = 0; j < this.y; j++) {
+            for (j = 0; j < this.pos_y; j++) {
               // add the sub array
               newmap[i][j] = [];
-              for (k = 0; k < this.z; k++) {
+              for (k = 0; k < this.pos_z; k++) {
                 // set the position to 0
                 newmap[i][j][k] = false;
 
@@ -270,15 +277,21 @@ var stage = $('#gameoflife');
 var pause = $('#pause');
 
 // set the scene size
-var WIDTH = 400, HEIGHT = 400;
+var WIDTH = 800,
+    HEIGHT = 800,
+    DEPTH = 800;
 
 // set some camera attributes
-var VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 0.1, FAR = 10000;
+var VIEW_ANGLE = 45,
+    ASPECT = WIDTH*1.5 / HEIGHT,
+    NEAR = 0.1,
+    FAR = 10000;
 
 var renderer;
 var camera;
 var scene;
 var target;
+// var injectVirus = false;
 
 function init() {
   // create a canvas renderer, camera
@@ -298,7 +311,7 @@ function init() {
   camera.lookAt(target);
 
   // start the renderer
-  renderer.setSize(WIDTH, HEIGHT);
+  renderer.setSize(WIDTH*1.5, HEIGHT);
   renderer.setClearColor(0xEEEEEE);
   // document.body.appendChild( renderer.domElement );
 
@@ -359,10 +372,51 @@ $('#size').change(function() {
   Grid.init();
 });
 
-$('#reset').click(function() {
-  // stop the game
-  Grid.pause();
+$('#lonely').change(function () {
+    // stop the game
+    Grid.pause();
 
+    // get rid of the old grid
+    Grid.clear_grid();
+    delete Grid.map;
+    // render the empty grid
+    renderer.render(scene, camera);
+
+    // re-initialize
+    Grid.init();
+});
+
+$('#breed').change(function () {
+    // stop the game
+    Grid.pause();
+
+    // get rid of the old grid
+    Grid.clear_grid();
+    delete Grid.map;
+    // render the empty grid
+    renderer.render(scene, camera);
+
+    // re-initialize
+    Grid.init();
+});
+
+$('#overcrowd').change(function () {
+    // stop the game
+    Grid.pause();
+
+    // get rid of the old grid
+    Grid.clear_grid();
+    delete Grid.map;
+    // render the empty grid
+    renderer.render(scene, camera);
+
+    // re-initialize
+    Grid.init();
+});
+
+$('#reset').click(function () {
+    // stop the game
+    Grid.pause();
   // get rid of the old grid
   Grid.clear_grid();
   delete Grid.map;
@@ -379,8 +433,8 @@ var targetYRotation = 0;
 var targetYRotationOnMouseDown = 0;
 var mouseXOnMouseDown;
 var mouseYOnMouseDown;
-var windowHalfX = Math.floor(WIDTH / 2);
-var windowHalfY = Math.floor(HEIGHT / 2);
+var windowHalfX = Math.floor(WIDTH);
+var windowHalfY = Math.floor(HEIGHT);
 
 // animation
 function onDocumentMouseDown(event) {
@@ -447,23 +501,24 @@ function animate() {
 }
 
 function renderAnim() {
-  var t = targetRotation;
-  var ty = targetYRotation;
-  if (t != 0 && ty != 0) {
-    camera.position.x = 800 * Math.sin(t * Math.PI / 360);
-    camera.position.y = 800 * Math.sin(ty * Math.PI / 360);
-    camera.position.z = 2000 * Math.cos(t * Math.PI / 360);
-    camera.lookAt(target);
-  } else if (t != 0) {
-    camera.position.x = 800 * Math.sin(t * Math.PI / 360);
-    camera.position.z = 2000 * Math.cos(t * Math.PI / 360);
-    camera.lookAt(target);
-  } else if (ty != 0) {
-    camera.position.y = 800 * Math.sin(ty * Math.PI / 360);
-    camera.position.z = 2000 * Math.cos(ty * Math.PI / 360);
-    camera.lookAt(target);
-  }
-  renderer.render(scene, camera);
+    var t = targetRotation;
+    var ty = targetYRotation;
+    if (t!=0 && ty!= 0) {
+        camera.position.x = WIDTH * Math.sin( t * Math.PI / 360 );
+        camera.position.y = HEIGHT * Math.sin( ty * Math.PI / 360 );
+        camera.position.z = (DEPTH*4) * Math.cos( t * Math.PI / 360 );
+        camera.lookAt( target );
+    } else if (t != 0) {
+        camera.position.x = WIDTH * Math.sin( t * Math.PI / 360 );
+        camera.position.z = (DEPTH*4) * Math.cos( t * Math.PI / 360 );
+        camera.lookAt( target );
+    } else if (ty != 0) {
+        camera.position.y = HEIGHT * Math.sin( ty * Math.PI / 360 );
+        camera.position.z = (DEPTH*4) * Math.cos( ty * Math.PI / 360 );
+        camera.lookAt( target );
+    }
+
+	renderer.render( scene, camera );
 }
 
 $(document).ready(function() { init(); });
