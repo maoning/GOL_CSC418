@@ -123,6 +123,86 @@ Grid = function() {
             // return however many we found
             return neighbours;
         },
+        /** Gets the number of living neighbours
+         * @param x The 'x' position
+         * @param y The 'y' position
+         * @param z The 'z' position
+         * @returns {void}
+         */
+        infectNeighbours : function (x,y,z) {
+            // get the min and max to search, respecting the grid boundries
+            var min_x = (x > 0 ? x-1 : x);
+            var max_x = (x < this.x-1 ? x+1: x);
+            var min_y = (y > 0 ? y-1 : y);
+            var max_y = (y < this.y-1 ? y+1: y);
+            var min_z = (z > 0 ? z-1 : z);
+            var max_z = (z < this.z-1 ? z+1: z);
+
+            // initialise the number of neighbors
+            var neighbours = 0;
+
+            // the ijk vars
+            var i = 0;
+            var j = 0;
+            var k = 0;
+
+            // now perform the search
+            for (i=min_x;i<=max_x;i++) {
+                for (j=min_y;j<=max_y;j++) {
+                    for (k=min_z;k<=max_z;k++) {
+                        // ignore the item we're looking for neighbours for
+                        if (!(i==x && j==y && k==z)) {
+                            var cell = this.is_alive(i,j,k);
+                            if (cell) {
+                                cell.infected = {lifespan: $('#lifespan').val()};
+                                cell.material.color.setHex( 0x000000 );
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        /** Gets the number of living neighbours
+         * @param x The 'x' position
+         * @param y The 'y' position
+         * @param z The 'z' position
+         * @returns {boolean} true if at least one of the parents is infected
+         */
+        hasInfectedParent : function (x,y,z) {
+            // get the min and max to search, respecting the grid boundries
+            var min_x = (x > 0 ? x-1 : x);
+            var max_x = (x < this.x-1 ? x+1: x);
+            var min_y = (y > 0 ? y-1 : y);
+            var max_y = (y < this.y-1 ? y+1: y);
+            var min_z = (z > 0 ? z-1 : z);
+            var max_z = (z < this.z-1 ? z+1: z);
+
+            // initialise the number of neighbors
+            var neighbours = 0;
+
+            // the ijk vars
+            var i = 0;
+            var j = 0;
+            var k = 0;
+
+            // now perform the search
+            for (i=min_x;i<=max_x;i++) {
+                for (j=min_y;j<=max_y;j++) {
+                    for (k=min_z;k<=max_z;k++) {
+                        // ignore the item we're looking for neighbours for
+                        if (!(i==x && j==y && k==z)) {
+                            var cell = this.is_alive(i,j,k);
+                            if (cell) {
+                                if (typeof cell.infected !== 'undefined' && cell.infected.lifespan >= 0) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        },
         render: function() {
             var newmap = [];
 
@@ -145,18 +225,34 @@ Grid = function() {
 
                         // transpose
                         if (cell) {
+                            if (typeof cell.infected !== 'undefined') {
+                                // console.log("this cell is infected [" + cell.infected.lifespan + "]");
+                                if (cell.infected.lifespan > 0) {
+                                    this.infectNeighbours(i,j,k);
+                                }
+                            }
                             // is the cell lonely or overcrowded?
                             if (n <= this.th.lonely || n >= this.th.overcrowd) {
                                 // kill the cell off
+                                scene.remove(cell);
+                            } else if (typeof cell.infected !== 'undefined' && cell.infected.lifespan == 0) {
                                 scene.remove(cell);
                             } else {
                                 // if not, just copy it across
                                 newmap[i][j][k] = cell;
                             }
+                            if (typeof cell.infected !== 'undefined') {
+                                cell.infected.lifespan = cell.infected.lifespan - 1;
+                            }
                         } else {
                             // check if we're in the breed threshold
                             if (n == this.th.breed) {
-                                var newcell = this.add_cell(i,j,k);
+                                var newcell;
+                                if (this.hasInfectedParent(i,j,k)) {
+                                    newcell = this.add_infectedcell(i,j,k);
+                                } else {
+                                    newcell = this.add_cell(i,j,k);
+                                }
 
                                 if (newcell) {
                                     // add the cell to the new map
@@ -182,13 +278,17 @@ Grid = function() {
         },
         add_cell: function (x,y,z) {
             if (!this.is_alive(x,y,z)) {
-                var color = 0x000000;
-                // set a base colour, which won't be black, and is somewhat based on position
-                var color_r = (((Math.random() * (x/8))+(this.x/4)+(x/2))/this.x)*0xff;
-                var color_g = (((Math.random() * (y/8))+(this.y/4)+(y/2))/this.y)*0xff;
-                var color_b = (((Math.random() * (z/8))+(this.z/4)+(z/2))/this.z)*0xff;
+                if (injectVirus == false) {
+                    var color = 0x000000;
+                    // set a base colour, which won't be black, and is somewhat based on position
+                    var color_r = (((Math.random() * (x/8))+(this.x/4)+(x/2))/this.x)*0xff;
+                    var color_g = (((Math.random() * (y/8))+(this.y/4)+(y/2))/this.y)*0xff;
+                    var color_b = (((Math.random() * (z/8))+(this.z/4)+(z/2))/this.z)*0xff;
 
-                color = (color_r * 0x010000) + (color_g * 0x000100) + color_b;
+                    color = (color_r * 0x010000) + (color_g * 0x000100) + color_b;
+                } else {
+                    var color = 0x000000;
+                }
 
                 var geometry = new THREE.BoxGeometry( this.cube_w, this.cube_h, this.cube_d, 1, 1, 1 );
                 var material = new THREE.MeshBasicMaterial({ color: color } );
@@ -198,15 +298,46 @@ Grid = function() {
                 newcell.position.x = Math.round(x*this.cube_w);
                 newcell.position.y = Math.round(y*this.cube_h);
                 newcell.position.z = Math.round(z*this.cube_d);
+
                 //console.log("Add cell, x: " + newcell.position.x + " y: " + newcell.position.y + " z: " + newcell.position.z);
 
                 // draw it
-                newcell.overdraw = true;
+                if (injectVirus == true) {
+                    newcell.infected = {lifespan:  $('#lifespan').val()};
+                    console.log(newcell.infected.lifespan);
+                    injectVirus = false;
+                };
+                newcell.overdraw = true
                 scene.add( newcell );
 
                 return newcell;
             }
+            return false;
+        },
+        add_infectedcell: function (x,y,z) {
+            if (!this.is_alive(x,y,z)) {
 
+                var color = 0x000000;
+
+                var geometry = new THREE.BoxGeometry( this.cube_w, this.cube_h, this.cube_d, 1, 1, 1 );
+                var material = new THREE.MeshBasicMaterial({ color: color } );
+                var newcell = new THREE.Mesh(geometry, material);
+
+                // Position the cube
+                newcell.position.x = Math.round(x*this.cube_w);
+                newcell.position.y = Math.round(y*this.cube_h);
+                newcell.position.z = Math.round(z*this.cube_d);
+
+                //console.log("Add cell, x: " + newcell.position.x + " y: " + newcell.position.y + " z: " + newcell.position.z);
+
+                // draw it
+                newcell.infected = {lifespan:  $('#lifespan').val()};
+                console.log(newcell.infected.lifespan);
+                newcell.overdraw = true
+                scene.add( newcell );
+
+                return newcell;
+            }
             return false;
         },
         pause: function() {
@@ -223,6 +354,7 @@ Grid = function() {
                 });
             }
         },
+
         start: function() {
             if (this.run === false) {
                 this.run = true;
@@ -263,6 +395,7 @@ Grid = function() {
 
 var stage = $('#gameoflife');
 var pause = $('#pause');
+var injectVirus = false;
 
 // set the scene size
 var WIDTH = 800,
@@ -279,7 +412,6 @@ var renderer;
 var camera;
 var scene;
 var target;
-// var injectVirus = false;
 
 function init() {
     // create a canvas renderer, camera
@@ -388,6 +520,10 @@ $('#reset').click(function () {
 
     // re-initialize
     Grid.init();
+});
+
+$('#injectVirus').click(function () {
+    injectVirus = true;
 });
 
 var targetRotation = 0;
