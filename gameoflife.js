@@ -348,8 +348,6 @@ Grid = function() {
             // var material = new THREE.MeshLambertMaterial( {color: color} );
             var material = new THREE.MeshPhongMaterial({
               color : color,
-              ambient : color,
-              diffuse : 0xcccccc,
               specular : 0xcccccc,
               shininess : 100,
               shading : THREE.FlatShading
