@@ -66,7 +66,7 @@ Grid = function() {
                         this.map[i][j][k] = false;
                         this.n_live_neighbours[i][j][k] = 0;
                         // randomly decide if we should populate this cell (about 5% of cells will be populated)
-                        if (Math.round(Math.random()*20)==1) {
+                        if (Math.random() <= 0.1) {
                             this.map[i][j][k] = this.add_cell(i,j,k);
                             this.n_live_neighbours[i][j][k] = 0;
                         }
