@@ -2,8 +2,7 @@
 ===============
 
 #### Wooden Monkey Competition Submission by: ####
-Ning Mao
-Sherry Shi
+Ning Mao, Sherry Shi
 
 This is a 3D interactive implementation of Conway's Game Of Life. The interactive controls include the following:
 * Click and drag the screen to rotate the scene
