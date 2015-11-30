@@ -5,3 +5,15 @@
 Ning Mao
 Sherry Shi
 
+This is a 3D interactive implementation of Conway's Game Of Life. The interactive controls include the following:
+* Click and drag the screen to rotate the scene
+* Map size - total number of cells on the screen
+* Speed - Frame rate for the animation
+* Lonely Count - A live cell with this many neighbours or less will die in the next frame due to loneliness.
+* Breed Count - A dead cell with this many neighbours or more will be born in the next frame.
+* Overcrowded Count - A live cell with this many neighbours or more will die in the next frame due to overcrowding.
+* Virus Lifespan - The lifespan of a cell infected by a virus. Infected cells are marked with its black colour.
+* Pause/Start - Pause/start the animation.
+* Randomize/Reset - Reset the world with random cells.
+* Inject Virus - Chooses a cell at random to infect with a virus. Infected cells turn black and will infect all its neighbours and children in the next frame.
+* 
