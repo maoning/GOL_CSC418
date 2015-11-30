@@ -19,6 +19,9 @@ Grid = function() {
 
         // the actual map
         map: [],
+        
+        // for keeping track of number of live neighbours of each cell
+        n_live_neighbours: [],
 
         run:false,
         timeout:false,
@@ -28,7 +31,7 @@ Grid = function() {
         init: function() {
             // clear the map
             this.map = [];
-
+            this.n_live_neighbours = [];
             // set the new size
             var size = $('#size').val();
             this.x = size;
@@ -53,21 +56,31 @@ Grid = function() {
             for (i=0;i<this.pos_x;i++) {
                 // add the sub array
                 this.map[i] = [];
+                this.n_live_neighbours[i] = [];
                 for (j=0;j<this.pos_y;j++) {
                     // add the sub array
                     this.map[i][j] = [];
+                    this.n_live_neighbours[i][j] = [];
                     for (k=0;k<this.pos_z;k++) {
                         // set the position to 0
                         this.map[i][j][k] = false;
-
+                        this.n_live_neighbours[i][j][k] = 0;
                         // randomly decide if we should populate this cell (about 5% of cells will be populated)
                         if (Math.round(Math.random()*20)==1) {
                             this.map[i][j][k] = this.add_cell(i,j,k);
+                            this.n_live_neighbours[i][j][k] = 0;
                         }
                     }
                 }
           }
-
+          // Update live neighbours.
+          for (i=0;i<this.pos_x;i++) {
+              for (j=0;j<this.pos_y;j++) {
+                  for (k=0;k<this.pos_z;k++) {
+                      if (this.is_alive(i, j, k)) {this.update_neighbours(i, j, k, true); }
+                  }
+              }
+          }
           // draw!
           renderer.render(scene, camera);
 
@@ -81,6 +94,41 @@ Grid = function() {
          * @returns {bool} true if alive, false if dead
          */
     is_alive : function(x, y, z) { return this.map[x][y][z]; },
+    update_neighbours:
+        function(x, y, z, alive) {
+          // get the min and max to search, respecting the grid boundries
+          var min_x = (x > 0 ? x - 1 : x);
+          var max_x = (x < this.x - 1 ? x + 1 : x);
+          var min_y = (y > 0 ? y - 1 : y);
+          var max_y = (y < this.y - 1 ? y + 1 : y);
+          var min_z = (z > 0 ? z - 1 : z);
+          var max_z = (z < this.z - 1 ? z + 1 : z);
+
+          // initialise the number of neighbors
+          var neighbours = 0;
+
+          // the ijk vars
+          var i = 0;
+          var j = 0;
+          var k = 0;
+
+          // now perform the update
+          for (i = min_x; i <= max_x; i++) {
+            for (j = min_y; j <= max_y; j++) {
+              for (k = min_z; k <= max_z; k++) {
+                // ignore the item we're looking for neighbours for
+                if (!(i == x && j == y && k == z)) {
+                  if (alive){
+                    this.n_live_neighbours[i][j][k]++;
+                  }
+                  else {
+                    this.n_live_neighbours[i][j][k]--;
+                  }
+                }
+              }
+            }
+          }
+        },
        /** Gets the number of living neighbours
         * @param x The 'x' position
         * @param y The 'y' position
@@ -220,7 +268,8 @@ Grid = function() {
                         newmap[i][j][k] = false;
 
                         var cell = this.is_alive(i,j,k);
-                        var n = this.living_neighbours(i,j,k);
+                        //var n = this.living_neighbours(i,j,k);
+                        var n = this.n_live_neighbours[i][j][k];
 
                         // transpose
                         if (cell) {
@@ -234,8 +283,10 @@ Grid = function() {
                             if (n <= this.th.lonely || n >= this.th.overcrowd) {
                                 // kill the cell off
                                 scene.remove(cell);
+                                this.update_neighbours(i, j, k, false);
                             } else if (typeof cell.infected !== 'undefined' && cell.infected.lifespan == 0) {
                                 scene.remove(cell);
+                                this.update_neighbours(i, j, k, false);
                             } else {
                                 // if not, just copy it across
                                 newmap[i][j][k] = cell;
@@ -252,6 +303,8 @@ Grid = function() {
                                 } else {
                                     newcell = this.add_cell(i,j,k);
                                 }
+
+                                this.update_neighbours(i, j, k, true);
 
                                 if (newcell) {
                                     // add the cell to the new map
@@ -318,7 +371,6 @@ Grid = function() {
             newcell.castShadow = true;
             newcell.receiveShadow = true;
             scene.add(newcell);
-
             return newcell;
           }
 
@@ -402,6 +454,7 @@ Grid = function() {
                     if (cell) {
                         scene.remove(cell);
                     }
+                    this.n_live_neighbours[i][j][k] = 0;
                 }
             }
         }
@@ -458,7 +511,7 @@ function init() {
   stage.append(renderer.domElement);
 
   // create the ground plane
-  var planeGeometry = new THREE.PlaneGeometry(2000, 2000, 1, 1);
+  var planeGeometry = new THREE.PlaneGeometry(5000, 2000, 1, 1);
   var planeMaterial = new THREE.MeshLambertMaterial({color : 0xc0c0c0});
   var plane = new THREE.Mesh(planeGeometry, planeMaterial);
   // rotate and position the plane
@@ -477,7 +530,7 @@ function init() {
 
   // add spotlight for the shadows
   var spotLight = new THREE.SpotLight(0xcccccc);
-  spotLight.position.set(500, 500, 500);
+  spotLight.position.set(2000, 2000, 2000);
   spotLight.lookAt(plane);
   spotLight.castShadow = true;
   spotLight.shadowDarkness = 0.5;
