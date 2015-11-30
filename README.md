@@ -4,7 +4,16 @@
 #### Wooden Monkey Competition Submission by: ####
 Ning Mao, Sherry Shi
 
-This is a 3D interactive implementation of Conway's Game Of Life. The interactive controls include the following:
+This is a 3D interactive implementation of Conway's Game Of Life. 
+To run the demo on localhost, run the following command:
+
+$ python -m SimpleHTTPServer
+
+Then go to [http://localhost:8000/gameOfLife.html](http://localhost:8000/gameOfLife.html).
+
+A live demo is also available [here](http://neomorning.com/GOL_CSC418/gameOfLife.html).
+
+The interactive controls include the following:
 * Click and drag the screen to rotate the scene
 * Map size - total number of cells on the screen
 * Speed - Frame rate for the animation
