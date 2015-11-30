@@ -16,4 +16,17 @@ This is a 3D interactive implementation of Conway's Game Of Life. The interactiv
 * Pause/Start - Pause/start the animation.
 * Randomize/Reset - Reset the world with random cells.
 * Inject Virus - Chooses a cell at random to infect with a virus. Infected cells turn black and will infect all its neighbours and children in the next frame.
-* 
+
+This project is implemented using a Javascript 3D rendering framework - ThreeJS. It is a fork of [https://github.com/samlev/3DGameOfLife](https://github.com/samlev/3DGameOfLife).
+Changes include:
+* Added lighting and material properties using the Phong shading model
+* Added shadows
+* Added virus injection feature
+* Added interactive user input
+* Optimized backend for performance
+
+Future developments include:
+* Adding texture to cells
+* Adding more motion to cells
+* Adding a moving point light
+* Adding physics model
