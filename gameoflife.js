@@ -527,15 +527,24 @@ function init() {
   scene.add(light);
 
   // add spotlight for the shadows
-  var spotLight = new THREE.SpotLight(0xcccccc);
-  spotLight.position.set(2000, 2000, 2000);
-  spotLight.lookAt(plane);
-  spotLight.castShadow = true;
-  spotLight.shadowDarkness = 0.5;
-  spotLight.shadowCameraVisible = true;
-  spotLight.shadowCameraNear = true;
-  scene.add(spotLight);
+  var spotLight1 = new THREE.SpotLight(0xcccccc);
+  spotLight1.position.set(2000, 2000, 2000);
+  spotLight1.lookAt(plane);
+  spotLight1.castShadow = true;
+  spotLight1.shadowDarkness = 0.5;
+  //spotLight1.shadowCameraVisible = true;
+  spotLight1.shadowCameraNear = true;
+  scene.add(spotLight1);
 
+  // add spotlight for the shadows
+  var spotLight2 = new THREE.SpotLight(0xcccccc);
+  spotLight2.position.set(-1000, 1000, -1000);
+  spotLight2.lookAt(plane);
+  spotLight2.castShadow = true;
+  spotLight2.shadowDarkness = 0.5;
+  //spotLight2.shadowCameraVisible = true;
+  spotLight2.shadowCameraNear = true;
+  scene.add(spotLight2);
   Grid.init();
   animate();
 
