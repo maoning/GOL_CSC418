@@ -7,7 +7,7 @@ Ning Mao, Sherry Shi
 This is a 3D interactive implementation of Conway's Game Of Life. 
 To run the demo on localhost, run the following command:
 
-$ python -m SimpleHTTPServer
+    $ python -m SimpleHTTPServer
 
 Then go to [http://localhost:8000/gameOfLife.html](http://localhost:8000/gameOfLife.html).
 
