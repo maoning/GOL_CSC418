@@ -17,9 +17,9 @@ body {
 </style>
 </head>
 <body>
-  
+
   <div id="gameoflife" style="border:1px solid #CCCCCC; margin:20px;"></div>
-  This is a fork of 
+  This is a fork of
   <a href="https://github.com/samlev/3DGameOfLife">https://github.com/samlev/3DGameOfLife</a>.
   <div id="controls">
     Map size:
@@ -74,7 +74,7 @@ body {
       <option value="8">8 cells</option>
     </select>
     <br>
-    Virus Life Span:
+    <!-- Virus Life Span:
     <select name="lifespan" id="lifespan">
       <option value="0">0 gen</option>
       <option selected="selected" value="1">1 gen</option>
@@ -85,7 +85,14 @@ body {
       <option value="6">6 gens</option>
       <option value="7">7 gens</option>
       <option value="8">8 gens</option>
+    </select> -->
+    Visual Effect:
+    <select name="effect" id="effect">
+      <option value="0">gravity fall</option>
+      <option selected="selected" value="1">explosion</option>
+      <option value="2">no effect</option>
     </select>
+
     <input type="button" id="pause" value="Stop" />
     <input type="button" id="reset" value="Randomize/Reset" />
     <input type="button" id="injectVirus" value="Inject Virus" />

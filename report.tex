@@ -1,0 +1,171 @@
+\documentclass{article}
+
+\usepackage{fancyhdr}
+\usepackage{extramarks}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{tikz}
+\usepackage[plain]{algorithm}
+\usepackage{algpseudocode}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{hyperref}
+
+\usetikzlibrary{automata,positioning}
+
+%
+% Basic Document Settings
+%
+
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1}
+
+\pagestyle{fancy}
+\chead{\hmwkClass\ (\hmwkDetails): \hmwkTitle}
+\rhead{\firstxmark}
+\lfoot{\lastxmark}
+\cfoot{\thepage}
+
+\renewcommand\headrulewidth{0.4pt}
+\renewcommand\footrulewidth{0.4pt}
+
+\setlength\parindent{0pt}
+
+%
+% Create Problem Sections
+%
+
+\newcommand{\enterProblemHeader}[1]{
+    \nobreak\extramarks{}{Q \arabic{#1} continued on next page\ldots}\nobreak{}
+    \nobreak\extramarks{Q \arabic{#1} (continued)}{Q \arabic{#1} continued on next page\ldots}\nobreak{}
+}
+
+\newcommand{\exitProblemHeader}[1]{
+    \nobreak\extramarks{Q \arabic{#1} (continued)}{Q \arabic{#1} continued on next page\ldots}\nobreak{}
+    \stepcounter{#1}
+    \nobreak\extramarks{Q \arabic{#1}}{}\nobreak{}
+}
+
+\setcounter{secnumdepth}{0}
+\newcounter{partCounter}
+\newcounter{homeworkProblemCounter}
+\setcounter{homeworkProblemCounter}{1}
+\nobreak\extramarks{Q \arabic{homeworkProblemCounter}}{}\nobreak{}
+
+%
+% Homework Problem Environment
+%
+% This environment takes an optional argument. When given, it will adjust the
+% problem counter. This is useful for when the problems given for your
+% assignment aren't sequential. See the last 3 problems of this template for an
+% example.
+%
+\newenvironment{homeworkProblem}[1][-1]{
+    \ifnum#1>0
+        \setcounter{homeworkProblemCounter}{#1}
+    \fi
+    \section{Q \arabic{homeworkProblemCounter}}
+    \setcounter{partCounter}{1}
+    \enterProblemHeader{homeworkProblemCounter}
+}{
+    \exitProblemHeader{homeworkProblemCounter}
+}
+
+%
+% Homework Details
+%   - Title
+%   - Due date
+%   - Details
+%   - Section/Time
+%   - Instructor
+%   - Author
+%
+
+\newcommand{\hmwkTitle}{Assignment\ \#3}
+\newcommand{\hmwkDueDate}{Dec 5, 2015}
+\newcommand{\hmwkClass}{CSC418}
+\newcommand{\hmwkDetails}{Computer Graphics}
+\newcommand{\hmwkClassInstructor}{Professor Karan Singh }
+\newcommand{\hmwkAuthorNameA}{Ning Mao}
+\newcommand{\hmwkAuthorStudentNumberA}{999055515}
+\newcommand{\hmwkAuthorNameB}{Sherry Shi}
+\newcommand{\hmwkAuthorStudentNumberB}{999064033}
+
+%
+% Title Page
+%
+
+\title{
+    \vspace{2in}
+    \textmd{\textbf{\hmwkClass:\ \hmwkTitle}}\\
+        \textmd{\textbf{\hmwkDetails}}\\
+    \normalsize\vspace{0.1in}\small{Due\ on\ \hmwkDueDate\ at 11:59pm}\\
+    \vspace{0.1in}\large{\textit{\hmwkClassInstructor}}
+    \vspace{3in}
+}
+
+%\author{\textbf{\hmwkAuthorNameA\ \hmwkAuthorStudentNumberA\ \hmwkAuthorNameB\ \hmwkAuthorStudentNumberB}}
+\author{
+     \textbf{\hmwkAuthorNameA}
+     \texttt{\hmwkAuthorStudentNumberA} \\
+      \textbf{\hmwkAuthorNameB} 
+     \texttt{\hmwkAuthorStudentNumberB}
+}
+\date{}
+
+\renewcommand{\part}[1]{\textbf{\large Part \Alph{partCounter}}\stepcounter{partCounter}\\}
+
+%%
+%% Various Helper Commands
+%%
+%
+%% Useful for algorithms
+%\newcommand{\alg}[1]{\textsc{\bfseries \footnotesize #1}}
+%
+%% For derivatives
+%\newcommand{\deriv}[1]{\frac{\mathrm{d}}{\mathrm{d}x} (#1)}
+%
+%% For partial derivatives
+%\newcommand{\pderiv}[2]{\frac{\partial}{\partial #1} (#2)}
+%
+%% Integral dx
+%\newcommand{\dx}{\mathrm{d}x}
+%
+%% Alias for the Solution section header
+%\newcommand{\solution}{\textbf{\large Solution}}
+%
+%% Probability commands: Expectation, Variance, Covariance, Bias
+%\newcommand{\E}{\mathrm{E}}
+%\newcommand{\Var}{\mathrm{Var}}
+%\newcommand{\Cov}{\mathrm{Cov}}
+%\newcommand{\Bias}{\mathrm{Bias}}
+
+\begin{document}
+
+\maketitle
+
+\pagebreak
+
+\section{Part B: Free-from Visualization: Game of Life 3D - Design Report}
+The design of this project can be broken down into 3 parts. The basic game logic implementation, lighting effect implementation and native physics effect rendering.\\
+
+\textbf{Basic Game Logic Implementation}\\
+
+The skeleton of this game is a fork from \url{https://github.com/samlev/3DGameOfLife}. We made following alterations based on the original framework. First of all, we introduced the concept of virus into the game. If the "Inject Virus" button is pressed, a infected cube would be randomly injected into the group, and it is labelled by black. All the cubes and children cubes next to the infected cube would be infected in the next iteration. As a result, the viewer can watch the propagation of this viral infection in a span of several iterations. Secondly, we added user interactiveness in terms of the control of the evolution rules. Users can change the style or speed of evolution by changing the parameters to the fundamental Game of Life rules. Thirdly, we made major optimization in computing evolution iterations. Sherry add more here...
+
+\textbf{Lighting Effect Implementation}\\
+Sherry's part....
+
+\textbf{Physics Effect Rendering}\\
+We have coded up two major physics effects into this visualization. In "Gravity Fall" mode, 5\% of dead cells are put into a separate array. At each frame update, they are being rotated to a randomized direction and they are being translated a distance calculated using the acceleration due to gravity. The "explosion" mode is partially based on the code sample \url{http://codepen.io/Xanmia/pen/DoljI#0}. In this mode, 5\% of dead cells burst into particles at each iteration. The particles would first be dispersed into all directions, then at a certain distance, they would start to fall toward to the ground instead. 
+
+
+\end{document}
+
