@@ -93,7 +93,9 @@ Grid = function() {
          * @param z The 'z' position
          * @returns {bool} true if alive, false if dead
          */
-    is_alive : function(x, y, z) { return this.map[x][y][z]; },
+    is_alive : function(x, y, z) {
+        return (this.map[x][y][z].state == 1) ? this.map[x][y][z] : false;
+    },
     update_neighbours:
         function(x, y, z, alive) {
           // get the min and max to search, respecting the grid boundries
@@ -251,6 +253,8 @@ Grid = function() {
             return false;
         },
         render: function() {
+            if (this.run == false) return;
+
             var newmap = [];
 
             var i = 0;
@@ -272,7 +276,7 @@ Grid = function() {
                         var n = this.n_live_neighbours[i][j][k];
 
                         // transpose
-                        if (cell) {
+                        if (cell && cell.state == 1) {
                             if (typeof cell.infected !== 'undefined') {
                                 // console.log("this cell is infected [" + cell.infected.lifespan + "]");
                                 if (cell.infected.lifespan > 0) {
@@ -282,10 +286,14 @@ Grid = function() {
                             // is the cell lonely or overcrowded?
                             if (n <= this.th.lonely || n >= this.th.overcrowd) {
                                 // kill the cell off
-                                scene.remove(cell);
+                                // scene.remove(cell);
+                                cell.state = 0;
+                                deadCells.push(cell);
                                 this.update_neighbours(i, j, k, false);
                             } else if (typeof cell.infected !== 'undefined' && cell.infected.lifespan == 0) {
-                                scene.remove(cell);
+                                // scene.remove(cell);
+                                cell.state = 0;
+                                deadCells.push(cell);
                                 this.update_neighbours(i, j, k, false);
                             } else {
                                 // if not, just copy it across
@@ -319,14 +327,13 @@ Grid = function() {
           // replace the map
           delete this.map;
           this.map = newmap;
-
           // draw
           renderer.render(scene, camera);
 
-          if (this.run === true) {
-            // render again
-            this.timeout = setTimeout('Grid.render();', $('#speed').val());
-          }
+        //   if (this.run === true) {
+        //     // render again
+        //     this.timeout = setTimeout('Grid.render();', $('#speed').val());
+        //   }
         },
     add_cell :
         function(x, y, z) {
@@ -364,6 +371,8 @@ Grid = function() {
                 newcell.infected = {lifespan:  $('#lifespan').val()};
                 injectVirus = false;
             };
+
+            newcell.state = 1;
             // draw it
             newcell.overdraw = true;
             newcell.castShadow = true;
@@ -479,6 +488,9 @@ var renderer;
 var camera;
 var scene;
 var target;
+var deadCells = [];
+var lastTime;
+var lastGridUpdateTime;
 
 function init() {
   // create a canvas renderer, camera
@@ -546,6 +558,10 @@ function init() {
   spotLight2.shadowCameraNear = true;
   scene.add(spotLight2);
   Grid.init();
+
+  lastTime = Date.now();
+  lastGridUpdateTime = lastTime;
+
   animate();
 
   renderer.domElement.addEventListener('mousedown', onDocumentMouseDown, false);
@@ -696,11 +712,26 @@ function onDocumentTouchMove(event) {
 }
 
 function animate() {
+  var now = Date.now();
+
+  var delta = (now - lastTime) / 1000.0;
+  lastTime = now;
+
+  var delta_gridupdate = now - lastGridUpdateTime;
+
+  if (delta_gridupdate > $('#speed').val()) {
+      Grid.render();
+      lastGridUpdateTime = now;
+  }
+
   requestAnimationFrame(animate);
+  update_deadcells(delta);
   renderAnim();
+
 }
 
 function renderAnim() {
+
     var t = targetRotation;
     var ty = targetYRotation;
     if (t!=0 && ty!= 0) {
@@ -719,6 +750,29 @@ function renderAnim() {
     }
 
 	renderer.render( scene, camera );
+}
+
+function update_deadcells(dt) {
+    var dy = dt*dt*9.8*100;
+    var direction = new THREE.Vector3(0, -dy, 0);
+    console.log('delta distance ' + dy);
+
+    for (var i = 0; i < deadCells.length; i++) {
+        var cell = deadCells[i];
+        cell.position.add(direction);
+        // deadCells[i].geometry.verticesNeedUpdate = true;
+
+        scene.updateMatrixWorld(true);
+        var position = new THREE.Vector3();
+        position.getPositionFromMatrix( cell.matrixWorld );
+        console.log("dead cell y pos " + position.y);
+
+        if (position.y < -250) {
+            scene.remove(cell);
+            deadCells.splice(i, 1);
+        }
+    }
+    renderer.render( scene, camera );
 }
 
 $(document).ready(function() { init(); });
