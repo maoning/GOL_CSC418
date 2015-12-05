@@ -479,6 +479,8 @@ Grid = function() {
 
 var stage = $('#gameoflife');
 var pause = $('#pause');
+var effect = $('#effect').val();
+
 var injectVirus = false;
 
 // set the scene size
@@ -497,6 +499,9 @@ var camera;
 var scene;
 var target;
 var deadCells = [];
+var parts = [];
+var fallingParts = [];
+var dirs = [];
 var lastTime;
 var lastGridUpdateTime;
 
@@ -525,6 +530,7 @@ function init() {
   renderer.shadowMapEnabled = true;
   renderer.shadowMapType = THREE.PCFSoftShadowMap;
 
+  renderer.setClearColor( 0xffffff, 0);
   // attach the render-supplied DOM element
   stage.append(renderer.domElement);
 
@@ -634,6 +640,25 @@ $('#overcrowd').change(function () {
     Grid.init();
 });
 
+$('#effect').change(function () {
+    // stop the game
+    Grid.pause();
+    effect = $('#effect').val();
+
+    // get rid of the old grid
+    Grid.clear_grid();
+    delete Grid.map;
+
+    clearParticles();
+    clearDeadCells();
+
+    // render the empty grid
+    renderer.render(scene, camera);
+
+    // re-initialize
+    Grid.init();
+});
+
 $('#reset').click(function () {
     // stop the game
     Grid.pause();
@@ -733,7 +758,15 @@ function animate() {
   }
 
   requestAnimationFrame(animate);
-  update_deadcells(delta);
+  //
+  if (effect == 0) {
+      update_deadcells(delta);
+  } else if (effect == 1) {
+        createExplosions();
+        updateExplosions(delta);
+        updateFall(delta);
+  }
+
   renderAnim();
 
 }
@@ -793,23 +826,168 @@ function update_deadcells(dt) {
     }
     renderer.render( scene, camera );
 }
+function clearDeadCells() {
+    for (var i = 0; i < deadCells.length; i++) {
+        scene.remove(deadCells[i]);
+    }
+    deadCells = [];
+    renderer.render( scene, camera );
+}
 
 var rotObjectMatrix;
 function rotateAroundObjectAxis(object, axis, radians) {
     rotObjectMatrix = new THREE.Matrix4();
     rotObjectMatrix.makeRotationAxis(axis.normalize(), radians);
 
-    // old code for Three.JS pre r54:
-    // object.matrix.multiplySelf(rotObjectMatrix);      // post-multiply
-    // new code for Three.JS r55+:
     object.matrix.multiply(rotObjectMatrix);
 
-    // old code for Three.js pre r49:
-    // object.rotation.getRotationFromMatrix(object.matrix, object.scale);
-    // old code for Three.js r50-r58:
-    // object.rotation.setEulerFromRotationMatrix(object.matrix);
-    // new code for Three.js r59+:
     object.rotation.setFromRotationMatrix(object.matrix);
 }
+
+function createExplosions()
+{
+    for (var i = 0; i < deadCells.length; i++) {
+        var cell = deadCells[i];
+        scene.remove(cell);
+        deadCells.splice(i, 1);
+        scene.updateMatrixWorld(true);
+        var position = new THREE.Vector3();
+        position.getPositionFromMatrix( cell.matrixWorld );
+        parts.push(new ExplodeAnimation( position.x, position.y, position.z ));
+    }
+}
+
+function updateExplosions(delta) {
+    var pCount = parts.length;
+      while(pCount--) {
+        parts[pCount].update(delta);
+        if (parts[pCount].checkForFall()) {
+            fallingParts.push(parts[pCount]);
+            parts.splice(pCount, 1);
+        }
+      }
+      renderer.render( scene, camera );
+
+}
+
+function clearParticles() {
+    var pCount = parts.length;
+      while(pCount--) {
+          parts[pCount].removeFromScene();
+      }
+      parts = [];
+      renderer.render( scene, camera );
+}
+
+function updateFall(delta) {
+    var pCount = fallingParts.length;
+    while(pCount--) {
+        fallingParts[pCount].updateFall(delta);
+        if (fallingParts[pCount].checkForPlane()) {
+            fallingParts.splice(pCount, 1);
+        }
+    }
+    renderer.render( scene, camera );
+}
+
+//////////////settings/////////
+var movementSpeed = 80;
+var totalObjects = 3;
+var objectSize = 30;
+// var sizeRandomness = 4000;
+var colors = [0xFF0FFF, 0xCCFF00, 0xFF000F, 0x996600, 0xFFFFFF];
+/////////////////////////////////
+
+function ExplodeAnimation(x,y, z)
+{
+  var geometry = new THREE.Geometry();
+
+  for (i = 0; i < totalObjects; i ++)
+  {
+    var vertex = new THREE.Vector3();
+    vertex.x = x;
+    vertex.y = y;
+    vertex.z = z;
+
+    geometry.vertices.push( vertex );
+    dirs.push({x:(Math.random() * movementSpeed)-(movementSpeed/2),y:(Math.random() * movementSpeed)-(movementSpeed/2),z:(Math.random() * movementSpeed)-(movementSpeed/2)});
+  }
+  var material = new THREE.ParticleBasicMaterial( { size: objectSize,  color: colors[Math.round(Math.random() * colors.length)] });
+  var particles = new THREE.ParticleSystem( geometry, material );
+
+  this.object = particles;
+  this.status = true;
+  this.object.origVertex = vertex;
+
+  this.xDir = (Math.random() * movementSpeed)-(movementSpeed/2);
+  this.yDir = (Math.random() * movementSpeed)-(movementSpeed/2);
+  this.zDir = (Math.random() * movementSpeed)-(movementSpeed/2);
+
+  var x = Math.random();
+  var y = Math.random();
+  var z = Math.random();
+  var scale = Math.sqrt(x*x + y*y + z*z);
+  x = x/scale; y = y/scale; z = z/scale;
+  this.axis = new THREE.Vector3(x, y, z);
+
+  scene.add(this.object);
+
+  this.update = function(dt){
+    if (this.status == true){
+      var pCount = totalObjects;
+      while(pCount--) {
+        var particle =  this.object.geometry.vertices[pCount]
+        particle.y += dirs[pCount].y;
+        particle.x += dirs[pCount].x;
+        particle.z += dirs[pCount].z;
+      }
+      this.object.geometry.verticesNeedUpdate = true;
+    }
+  }
+
+  this.checkForFall = function() {
+    if (this.status == true){
+        // Sample the first particle
+        var particle =  this.object.geometry.vertices[0];
+        if (Math.abs(particle.x - this.object.origVertex.x) > 150) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+  }
+
+  this.updateFall = function(dt) {
+      if (this.status == true){
+        var pCount = totalObjects;
+        var radians = dt * Math.PI/180 * 150;
+        while(pCount--) {
+          var particle =  this.object.geometry.vertices[pCount];
+            // rotateAroundObjectAxis(this.object, this.axis, radians);
+            particle.y -= dt*dt*9.8*100;
+        }
+        this.object.geometry.verticesNeedUpdate = true;
+      }
+  }
+
+  this.checkForPlane = function() {
+      if (this.status == true){
+          // Sample the first particle
+          var particle =  this.object.geometry.vertices[0];
+          if (particle.y < -250) {
+              scene.remove( this.object );
+              return true;
+          } else {
+              return false;
+          }
+      }
+  }
+
+  this.removeFromScene = function() {
+      scene.remove( this.object );
+  }
+
+}
+
 
 $(document).ready(function() { init(); });
