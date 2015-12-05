@@ -19,7 +19,7 @@ Grid = function() {
 
         // the actual map
         map: [],
-        
+
         // for keeping track of number of live neighbours of each cell
         n_live_neighbours: [],
 
@@ -98,11 +98,11 @@ Grid = function() {
         function(x, y, z, alive) {
           // get the min and max to search, respecting the grid boundries
           var min_x = (x > 0 ? x - 1 : x);
-          var max_x = (x < this.x - 1 ? x + 1 : x);
+          var max_x = (x < this.pos_x - 1 ? x + 1 : x);
           var min_y = (y > 0 ? y - 1 : y);
-          var max_y = (y < this.y - 1 ? y + 1 : y);
+          var max_y = (y < this.pos_y - 1 ? y + 1 : y);
           var min_z = (z > 0 ? z - 1 : z);
-          var max_z = (z < this.z - 1 ? z + 1 : z);
+          var max_z = (z < this.pos_z - 1 ? z + 1 : z);
 
           // initialise the number of neighbors
           var neighbours = 0;
@@ -139,11 +139,11 @@ Grid = function() {
         function(x, y, z) {
           // get the min and max to search, respecting the grid boundries
           var min_x = (x > 0 ? x - 1 : x);
-          var max_x = (x < this.x - 1 ? x + 1 : x);
+          var max_x = (x < this.pos_x - 1 ? x + 1 : x);
           var min_y = (y > 0 ? y - 1 : y);
-          var max_y = (y < this.y - 1 ? y + 1 : y);
+          var max_y = (y < this.pos_y - 1 ? y + 1 : y);
           var min_z = (z > 0 ? z - 1 : z);
-          var max_z = (z < this.z - 1 ? z + 1 : z);
+          var max_z = (z < this.pos_z - 1 ? z + 1 : z);
 
           // initialise the number of neighbors
           var neighbours = 0;
@@ -179,11 +179,11 @@ Grid = function() {
         infectNeighbours : function (x,y,z) {
             // get the min and max to search, respecting the grid boundries
             var min_x = (x > 0 ? x-1 : x);
-            var max_x = (x < this.x-1 ? x+1: x);
+            var max_x = (x < this.pos_x-1 ? x+1: x);
             var min_y = (y > 0 ? y-1 : y);
-            var max_y = (y < this.y-1 ? y+1: y);
+            var max_y = (y < this.pos_y-1 ? y+1: y);
             var min_z = (z > 0 ? z-1 : z);
-            var max_z = (z < this.z-1 ? z+1: z);
+            var max_z = (z < this.pos_z-1 ? z+1: z);
 
             // initialise the number of neighbors
             var neighbours = 0;
@@ -218,11 +218,11 @@ Grid = function() {
         hasInfectedParent : function (x,y,z) {
             // get the min and max to search, respecting the grid boundries
             var min_x = (x > 0 ? x-1 : x);
-            var max_x = (x < this.x-1 ? x+1: x);
+            var max_x = (x < this.pos_x-1 ? x+1: x);
             var min_y = (y > 0 ? y-1 : y);
-            var max_y = (y < this.y-1 ? y+1: y);
+            var max_y = (y < this.pos_y-1 ? y+1: y);
             var min_z = (z > 0 ? z-1 : z);
-            var max_z = (z < this.z-1 ? z+1: z);
+            var max_z = (z < this.pos_z-1 ? z+1: z);
 
             // initialise the number of neighbors
             var neighbours = 0;
