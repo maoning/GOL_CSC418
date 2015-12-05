@@ -286,14 +286,22 @@ Grid = function() {
                             // is the cell lonely or overcrowded?
                             if (n <= this.th.lonely || n >= this.th.overcrowd) {
                                 // kill the cell off
-                                // scene.remove(cell);
-                                cell.state = 0;
-                                deadCells.push(cell);
+                                // Add free fall effect to 5% of the cube
+                                if (Math.random() <= 0.1) {
+                                    cell.state = 0;
+                                    deadCells.push(cell);
+                                } else {
+                                    scene.remove(cell);
+                                }
+
                                 this.update_neighbours(i, j, k, false);
                             } else if (typeof cell.infected !== 'undefined' && cell.infected.lifespan == 0) {
-                                // scene.remove(cell);
-                                cell.state = 0;
-                                deadCells.push(cell);
+                                if (Math.random() <= 0.1) {
+                                    cell.state = 0;
+                                    deadCells.push(cell);
+                                } else {
+                                    scene.remove(cell);
+                                }
                                 this.update_neighbours(i, j, k, false);
                             } else {
                                 // if not, just copy it across
@@ -755,10 +763,21 @@ function renderAnim() {
 function update_deadcells(dt) {
     var dy = dt*dt*9.8*100;
     var direction = new THREE.Vector3(0, -dy, 0);
+    // var axis = new THREE.Vector3(1, 0, 0);
     console.log('delta distance ' + dy);
+    var radians = dt * Math.PI/180 * 150;
 
     for (var i = 0; i < deadCells.length; i++) {
         var cell = deadCells[i];
+        if (typeof(cell.axis) == 'undefined') {
+            var x = Math.random();
+            var y = Math.random();
+            var z = Math.random();
+            var scale = Math.sqrt(x*x + y*y + z*z);
+            x = x/scale; y = y/scale; z = z/scale;
+            cell.axis = new THREE.Vector3(x, y, z);
+        }
+        rotateAroundObjectAxis(cell, cell.axis, radians);
         cell.position.add(direction);
         // deadCells[i].geometry.verticesNeedUpdate = true;
 
@@ -773,6 +792,24 @@ function update_deadcells(dt) {
         }
     }
     renderer.render( scene, camera );
+}
+
+var rotObjectMatrix;
+function rotateAroundObjectAxis(object, axis, radians) {
+    rotObjectMatrix = new THREE.Matrix4();
+    rotObjectMatrix.makeRotationAxis(axis.normalize(), radians);
+
+    // old code for Three.JS pre r54:
+    // object.matrix.multiplySelf(rotObjectMatrix);      // post-multiply
+    // new code for Three.JS r55+:
+    object.matrix.multiply(rotObjectMatrix);
+
+    // old code for Three.js pre r49:
+    // object.rotation.getRotationFromMatrix(object.matrix, object.scale);
+    // old code for Three.js r50-r58:
+    // object.rotation.setEulerFromRotationMatrix(object.matrix);
+    // new code for Three.js r59+:
+    object.rotation.setFromRotationMatrix(object.matrix);
 }
 
 $(document).ready(function() { init(); });
