@@ -19,7 +19,7 @@ Grid = function() {
 
         // the actual map
         map: [],
-        
+
         // for keeping track of number of live neighbours of each cell
         n_live_neighbours: [],
 
@@ -93,16 +93,18 @@ Grid = function() {
          * @param z The 'z' position
          * @returns {bool} true if alive, false if dead
          */
-    is_alive : function(x, y, z) { return this.map[x][y][z]; },
+    is_alive : function(x, y, z) {
+        return (this.map[x][y][z].state == 1) ? this.map[x][y][z] : false;
+    },
     update_neighbours:
         function(x, y, z, alive) {
           // get the min and max to search, respecting the grid boundries
           var min_x = (x > 0 ? x - 1 : x);
-          var max_x = (x < this.x - 1 ? x + 1 : x);
+          var max_x = (x < this.pos_x - 1 ? x + 1 : x);
           var min_y = (y > 0 ? y - 1 : y);
-          var max_y = (y < this.y - 1 ? y + 1 : y);
+          var max_y = (y < this.pos_y - 1 ? y + 1 : y);
           var min_z = (z > 0 ? z - 1 : z);
-          var max_z = (z < this.z - 1 ? z + 1 : z);
+          var max_z = (z < this.pos_z - 1 ? z + 1 : z);
 
           // initialise the number of neighbors
           var neighbours = 0;
@@ -139,11 +141,11 @@ Grid = function() {
         function(x, y, z) {
           // get the min and max to search, respecting the grid boundries
           var min_x = (x > 0 ? x - 1 : x);
-          var max_x = (x < this.x - 1 ? x + 1 : x);
+          var max_x = (x < this.pos_x - 1 ? x + 1 : x);
           var min_y = (y > 0 ? y - 1 : y);
-          var max_y = (y < this.y - 1 ? y + 1 : y);
+          var max_y = (y < this.pos_y - 1 ? y + 1 : y);
           var min_z = (z > 0 ? z - 1 : z);
-          var max_z = (z < this.z - 1 ? z + 1 : z);
+          var max_z = (z < this.pos_z - 1 ? z + 1 : z);
 
           // initialise the number of neighbors
           var neighbours = 0;
@@ -179,11 +181,11 @@ Grid = function() {
         infectNeighbours : function (x,y,z) {
             // get the min and max to search, respecting the grid boundries
             var min_x = (x > 0 ? x-1 : x);
-            var max_x = (x < this.x-1 ? x+1: x);
+            var max_x = (x < this.pos_x-1 ? x+1: x);
             var min_y = (y > 0 ? y-1 : y);
-            var max_y = (y < this.y-1 ? y+1: y);
+            var max_y = (y < this.pos_y-1 ? y+1: y);
             var min_z = (z > 0 ? z-1 : z);
-            var max_z = (z < this.z-1 ? z+1: z);
+            var max_z = (z < this.pos_z-1 ? z+1: z);
 
             // initialise the number of neighbors
             var neighbours = 0;
@@ -218,11 +220,11 @@ Grid = function() {
         hasInfectedParent : function (x,y,z) {
             // get the min and max to search, respecting the grid boundries
             var min_x = (x > 0 ? x-1 : x);
-            var max_x = (x < this.x-1 ? x+1: x);
+            var max_x = (x < this.pos_x-1 ? x+1: x);
             var min_y = (y > 0 ? y-1 : y);
-            var max_y = (y < this.y-1 ? y+1: y);
+            var max_y = (y < this.pos_y-1 ? y+1: y);
             var min_z = (z > 0 ? z-1 : z);
-            var max_z = (z < this.z-1 ? z+1: z);
+            var max_z = (z < this.pos_z-1 ? z+1: z);
 
             // initialise the number of neighbors
             var neighbours = 0;
@@ -251,6 +253,8 @@ Grid = function() {
             return false;
         },
         render: function() {
+            if (this.run == false) return;
+
             var newmap = [];
 
             var i = 0;
@@ -272,7 +276,7 @@ Grid = function() {
                         var n = this.n_live_neighbours[i][j][k];
 
                         // transpose
-                        if (cell) {
+                        if (cell && cell.state == 1) {
                             if (typeof cell.infected !== 'undefined') {
                                 // console.log("this cell is infected [" + cell.infected.lifespan + "]");
                                 if (cell.infected.lifespan > 0) {
@@ -282,10 +286,22 @@ Grid = function() {
                             // is the cell lonely or overcrowded?
                             if (n <= this.th.lonely || n >= this.th.overcrowd) {
                                 // kill the cell off
-                                scene.remove(cell);
+                                // Add free fall effect to 5% of the cube
+                                if (Math.random() <= 0.1) {
+                                    cell.state = 0;
+                                    deadCells.push(cell);
+                                } else {
+                                    scene.remove(cell);
+                                }
+
                                 this.update_neighbours(i, j, k, false);
                             } else if (typeof cell.infected !== 'undefined' && cell.infected.lifespan == 0) {
-                                scene.remove(cell);
+                                if (Math.random() <= 0.1) {
+                                    cell.state = 0;
+                                    deadCells.push(cell);
+                                } else {
+                                    scene.remove(cell);
+                                }
                                 this.update_neighbours(i, j, k, false);
                             } else {
                                 // if not, just copy it across
@@ -319,14 +335,13 @@ Grid = function() {
           // replace the map
           delete this.map;
           this.map = newmap;
-
           // draw
           renderer.render(scene, camera);
 
-          if (this.run === true) {
-            // render again
-            this.timeout = setTimeout('Grid.render();', $('#speed').val());
-          }
+        //   if (this.run === true) {
+        //     // render again
+        //     this.timeout = setTimeout('Grid.render();', $('#speed').val());
+        //   }
         },
     add_cell :
         function(x, y, z) {
@@ -364,6 +379,8 @@ Grid = function() {
                 newcell.infected = {lifespan:  $('#lifespan').val()};
                 injectVirus = false;
             };
+
+            newcell.state = 1;
             // draw it
             newcell.overdraw = true;
             newcell.castShadow = true;
@@ -479,6 +496,9 @@ var renderer;
 var camera;
 var scene;
 var target;
+var deadCells = [];
+var lastTime;
+var lastGridUpdateTime;
 
 function init() {
   // create a canvas renderer, camera
@@ -546,6 +566,10 @@ function init() {
   spotLight2.shadowCameraNear = true;
   scene.add(spotLight2);
   Grid.init();
+
+  lastTime = Date.now();
+  lastGridUpdateTime = lastTime;
+
   animate();
 
   renderer.domElement.addEventListener('mousedown', onDocumentMouseDown, false);
@@ -696,11 +720,26 @@ function onDocumentTouchMove(event) {
 }
 
 function animate() {
+  var now = Date.now();
+
+  var delta = (now - lastTime) / 1000.0;
+  lastTime = now;
+
+  var delta_gridupdate = now - lastGridUpdateTime;
+
+  if (delta_gridupdate > $('#speed').val()) {
+      Grid.render();
+      lastGridUpdateTime = now;
+  }
+
   requestAnimationFrame(animate);
+  update_deadcells(delta);
   renderAnim();
+
 }
 
 function renderAnim() {
+
     var t = targetRotation;
     var ty = targetYRotation;
     if (t!=0 && ty!= 0) {
@@ -719,6 +758,58 @@ function renderAnim() {
     }
 
 	renderer.render( scene, camera );
+}
+
+function update_deadcells(dt) {
+    var dy = dt*dt*9.8*100;
+    var direction = new THREE.Vector3(0, -dy, 0);
+    // var axis = new THREE.Vector3(1, 0, 0);
+    console.log('delta distance ' + dy);
+    var radians = dt * Math.PI/180 * 150;
+
+    for (var i = 0; i < deadCells.length; i++) {
+        var cell = deadCells[i];
+        if (typeof(cell.axis) == 'undefined') {
+            var x = Math.random();
+            var y = Math.random();
+            var z = Math.random();
+            var scale = Math.sqrt(x*x + y*y + z*z);
+            x = x/scale; y = y/scale; z = z/scale;
+            cell.axis = new THREE.Vector3(x, y, z);
+        }
+        rotateAroundObjectAxis(cell, cell.axis, radians);
+        cell.position.add(direction);
+        // deadCells[i].geometry.verticesNeedUpdate = true;
+
+        scene.updateMatrixWorld(true);
+        var position = new THREE.Vector3();
+        position.getPositionFromMatrix( cell.matrixWorld );
+        console.log("dead cell y pos " + position.y);
+
+        if (position.y < -250) {
+            scene.remove(cell);
+            deadCells.splice(i, 1);
+        }
+    }
+    renderer.render( scene, camera );
+}
+
+var rotObjectMatrix;
+function rotateAroundObjectAxis(object, axis, radians) {
+    rotObjectMatrix = new THREE.Matrix4();
+    rotObjectMatrix.makeRotationAxis(axis.normalize(), radians);
+
+    // old code for Three.JS pre r54:
+    // object.matrix.multiplySelf(rotObjectMatrix);      // post-multiply
+    // new code for Three.JS r55+:
+    object.matrix.multiply(rotObjectMatrix);
+
+    // old code for Three.js pre r49:
+    // object.rotation.getRotationFromMatrix(object.matrix, object.scale);
+    // old code for Three.js r50-r58:
+    // object.rotation.setEulerFromRotationMatrix(object.matrix);
+    // new code for Three.js r59+:
+    object.rotation.setFromRotationMatrix(object.matrix);
 }
 
 $(document).ready(function() { init(); });
