@@ -24,11 +24,9 @@ body {
   <div id="controls">
     Map size:
     <select name="size" id="size">
-      <option value="10">Tiny (1000 cells)</option>
-      <option value="20">Small (8000 cells)</option>
-      <option value="25">Medium (15625 cells)</option>
-      <option value="30">Big (27000 cells)*</option>
-      <option value="50">Massive (125000 cells)*</option>
+      <option value="5">Tiny (125 cells)</option>
+      <option value="8">Small (512 cells)</option>
+      <option value="10">Medium (1000 cells)</option>
     </select>
     Speed:
     <select name="speed" id="speed">
@@ -90,7 +88,8 @@ body {
     <select name="effect" id="effect">
       <option value="0">gravity fall</option>
       <option selected="selected" value="1">explosion</option>
-      <option value="2">no effect</option>
+      <option value="2">texture</option>
+      <option value="3">no effect</option>
     </select>
 
     <input type="button" id="pause" value="Stop" />

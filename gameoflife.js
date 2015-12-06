@@ -1,4 +1,4 @@
-Grid = function() {
+ Grid = function() {
     return {
         // map size
         x : 100,
@@ -48,7 +48,7 @@ Grid = function() {
             var k = 0;
 
             // number of cells to generate in each direction
-            this.pos_x = this.x * 2;
+            this.pos_x = this.x;
             this.pos_y = this.y;
             this.pos_z = this.z;
 
@@ -77,10 +77,11 @@ Grid = function() {
           for (i=0;i<this.pos_x;i++) {
               for (j=0;j<this.pos_y;j++) {
                   for (k=0;k<this.pos_z;k++) {
-                      if (this.is_alive(i, j, k)) {this.update_neighbours(i, j, k, true); }
+                      if (this.is_alive(i, j, k)) {this.update_neighbours(this.n_live_neighbours, i, j, k, true); }
                   }
               }
           }
+
           // draw!
           renderer.render(scene, camera);
 
@@ -96,8 +97,25 @@ Grid = function() {
     is_alive : function(x, y, z) {
         return (this.map[x][y][z].state == 1) ? this.map[x][y][z] : false;
     },
+
+    copy_array:
+      function(array){
+        var new_array = [];
+          // Update live neighbours.
+          for (i=0;i<this.pos_x;i++) {
+              new_array[i] = [];
+              for (j=0;j<this.pos_y;j++) {
+                  new_array[i][j] = [];
+                  for (k=0;k<this.pos_z;k++) {      
+                      new_array[i][j][k] = array[i][j][k];
+                  }
+              }
+          }
+      return new_array;
+    },
+
     update_neighbours:
-        function(x, y, z, alive) {
+        function(neighbours, x, y, z, alive) {
           // get the min and max to search, respecting the grid boundries
           var min_x = (x > 0 ? x - 1 : x);
           var max_x = (x < this.pos_x - 1 ? x + 1 : x);
@@ -105,9 +123,6 @@ Grid = function() {
           var max_y = (y < this.pos_y - 1 ? y + 1 : y);
           var min_z = (z > 0 ? z - 1 : z);
           var max_z = (z < this.pos_z - 1 ? z + 1 : z);
-
-          // initialise the number of neighbors
-          var neighbours = 0;
 
           // the ijk vars
           var i = 0;
@@ -121,10 +136,10 @@ Grid = function() {
                 // ignore the item we're looking for neighbours for
                 if (!(i == x && j == y && k == z)) {
                   if (alive){
-                    this.n_live_neighbours[i][j][k]++;
+                    neighbours[i][j][k]++;
                   }
                   else {
-                    this.n_live_neighbours[i][j][k]--;
+                    neighbours[i][j][k]--;
                   }
                 }
               }
@@ -256,7 +271,7 @@ Grid = function() {
             if (this.run == false) return;
 
             var newmap = [];
-
+            var new_neighbours = this.copy_array(this.n_live_neighbours);
             var i = 0;
             var j = 0;
             var k = 0;
@@ -294,7 +309,7 @@ Grid = function() {
                                     scene.remove(cell);
                                 }
 
-                                this.update_neighbours(i, j, k, false);
+                                this.update_neighbours(new_neighbours, i, j, k, false);
                             } else if (typeof cell.infected !== 'undefined' && cell.infected.lifespan == 0) {
                                 if (Math.random() <= 0.1) {
                                     cell.state = 0;
@@ -302,7 +317,7 @@ Grid = function() {
                                 } else {
                                     scene.remove(cell);
                                 }
-                                this.update_neighbours(i, j, k, false);
+                                this.update_neighbours(new_neighbours, i, j, k, false);
                             } else {
                                 // if not, just copy it across
                                 newmap[i][j][k] = cell;
@@ -320,7 +335,7 @@ Grid = function() {
                                     newcell = this.add_cell(i,j,k);
                                 }
 
-                                this.update_neighbours(i, j, k, true);
+                                this.update_neighbours(new_neighbours, i, j, k, true);
 
                                 if (newcell) {
                                     // add the cell to the new map
@@ -335,6 +350,9 @@ Grid = function() {
           // replace the map
           delete this.map;
           this.map = newmap;
+          // replace the neighbours matrix
+          delete this.n_live_neighbours;
+          this.n_live_neighbours = new_neighbours;
           // draw
           renderer.render(scene, camera);
 
@@ -346,27 +364,60 @@ Grid = function() {
     add_cell :
         function(x, y, z) {
           if (!this.is_alive(x, y, z)) {
-            if (injectVirus == false) {
-                var color = 0x000000;
-                // set a base colour, which won't be black, and is somewhat based on
-                // position
-                var color_r = (Math.random() * x / this.x) * 0xf4 + 8;
-                var color_g = (Math.random() * y / this.y) * 0xf4 + 8;
-                var color_b = (Math.random() * z / this.z) * 0xf4 + 8;
-
-                color = (color_r << 16) + (color_g << 8) + color_b;
-            } else {
-                var color = 0x000000;
-            }
             var geometry = new THREE.BoxGeometry(this.cube_w, this.cube_h,
-                                                 this.cube_d, 1, 1, 1);
-            // var material = new THREE.MeshLambertMaterial( {color: color} );
-            var material = new THREE.MeshPhongMaterial({
-              color : color,
-              specular : 0xcccccc,
-              shininess : 100,
-              shading : THREE.FlatShading
-            });
+                                                  this.cube_d, 1, 1, 1);
+            if (injectVirus){
+              var color = 0x000000;
+              var material = new THREE.MeshPhongMaterial({
+                color : color,
+                specular : 0xcccccc,
+                shininess : 100,
+                shading : THREE.FlatShading
+              });
+            }
+            else if (texMap){
+              var random = Math.floor(Math.random() * 6 + 1);
+              switch (random){
+                case 1:
+                  var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/bricks.jpg') } );
+                  break;
+                case 2:
+                  var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/clouds.jpg') } );
+                  break;
+                case 3:
+                  var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/crate.jpg') } );
+                  break;
+                case 4:
+                  var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/stone-wall.jpg') } );
+                  break;
+                case 5:
+                  var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/water.jpg') } );
+                  break;
+                case 6:
+                  var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/wood-floor.jpg') } );
+                  break;
+                default:
+                  var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/bricks.jpg') } );
+              }
+            }
+            else {
+              var color = 0x000000;
+              // set a base colour, which won't be black, and is somewhat based on
+              // position
+              var color_r = (Math.random() * x / this.x) * 0xf4 + 8;
+              var color_g = (Math.random() * y / this.y) * 0xf4 + 8;
+              var color_b = (Math.random() * z / this.z) * 0xf4 + 8;
+
+              color = (color_r << 16) + (color_g << 8) + color_b;
+              // var material = new THREE.MeshLambertMaterial( {color: color} );
+              
+              var material = new THREE.MeshPhongMaterial({
+                color : color,
+                specular : 0xcccccc,
+                shininess : 100,
+                shading : THREE.FlatShading
+              });
+            }
             var newcell = new THREE.Mesh(geometry, material);
 
             // Position the cube
@@ -452,7 +503,8 @@ Grid = function() {
               this.timeout = false;
             }
             // start the game
-            this.timeout = setTimeout('Grid.render();', $('#speed').val());
+            Grid.render();
+            //this.timeout = setTimeout('Grid.render();', $('#speed').val());
           }
         },
     clear_grid: function() {
@@ -482,7 +534,7 @@ var pause = $('#pause');
 var effect = $('#effect').val();
 
 var injectVirus = false;
-
+var texMap = false;
 // set the scene size
 var WIDTH = 800,
     HEIGHT = 800,
@@ -761,10 +813,16 @@ function animate() {
   //
   if (effect == 0) {
       update_deadcells(delta);
+      texMap = false;
   } else if (effect == 1) {
         createExplosions();
         updateExplosions(delta);
         updateFall(delta);
+      texMap == false;
+  } else if (effect == 2){
+      texMap = true;
+  } else {
+      texMap = false;
   }
 
   renderAnim();
