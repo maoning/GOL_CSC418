@@ -152,9 +152,14 @@
 \maketitle
 
 \pagebreak
+\section{Part A: Basic Ray-Tracer}
+Ray-Tracer was implemented first by transforming ray to world space by making use of viewToWorld matrix. Then UnitSquare and UnitSphere intersect methods were implemented. The UnitSquare intersection was determined by first transforming the ray.dir to local space, and compute its intersection with the plane, then finally check if the intersection falls within the unit square. The UnitSphere intersection was determined using basic trigonometry principles and the closest point is chosen if there are 2 intersections. Finally, shade method was implemented for PointLight. The basic logic was derived from Phong shading principles taught in class. Each lighting property was computed separately by taking into account of their corresponding material properties and then combined them together to determine the ray's colour component.
 
 \section{Part B: Free-from Visualization: Game of Life 3D - Design Report}
 The design of this project can be broken down into 3 parts. The basic game logic implementation, lighting effect implementation and native physics effect rendering.\\
+
+This project is currently live at \url{http://neomorning.com/GOL_CSC418/gameOfLife.html}\\
+
 
 \textbf{Basic Game Logic Implementation}\\
 
