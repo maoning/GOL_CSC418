@@ -379,25 +379,88 @@
               var random = Math.floor(Math.random() * 6 + 1);
               switch (random){
                 case 1:
-                  var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/bricks.jpg') } );
+                  var texture = THREE.ImageUtils.loadTexture('images/bricks.jpg');
+                  //Filters... to get rid of warnings.
+                  texture.magFilter = THREE.NearestFilter;
+                  texture.minFilter = THREE.NearestFilter;
+                  var material = new THREE.MeshPhongMaterial({
+                    map : texture,
+                    specular : 0xcc0000,
+                    shininess : 5,
+                    shading : THREE.FlatShading
+                  });
                   break;
                 case 2:
-                  var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/clouds.jpg') } );
+                  var texture = THREE.ImageUtils.loadTexture('images/clouds.jpg');
+                  //Filters... to get rid of warnings.
+                  texture.magFilter = THREE.NearestFilter;
+                  texture.minFilter = THREE.NearestFilter;
+                  var material = new THREE.MeshPhongMaterial({
+                    map : texture,
+                    specular : 0x888888,
+                    shininess : 80,
+                    shading : THREE.FlatShading
+                  });
                   break;
                 case 3:
-                  var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/crate.jpg') } );
+                  var texture = THREE.ImageUtils.loadTexture('images/crate.jpg');
+                  //Filters... to get rid of warnings.
+                  texture.magFilter = THREE.NearestFilter;
+                  texture.minFilter = THREE.NearestFilter;
+                  var material = new THREE.MeshPhongMaterial({
+                    map : texture,
+                    specular : 0xaa8800,
+                    shininess : 5,
+                    shading : THREE.FlatShading
+                  });
                   break;
                 case 4:
-                  var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/stone-wall.jpg') } );
+                  var texture = THREE.ImageUtils.loadTexture('images/stone-wall.jpg');
+                  //Filters... to get rid of warnings.
+                  texture.magFilter = THREE.NearestFilter;
+                  texture.minFilter = THREE.NearestFilter;
+                  var material = new THREE.MeshPhongMaterial({
+                    map : texture,
+                    specular : 0x888888,
+                    shininess : 50,
+                    shading : THREE.FlatShading
+                  });
                   break;
                 case 5:
-                  var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/water.jpg') } );
+                  var texture = THREE.ImageUtils.loadTexture('images/water.jpg');
+                  //Filters... to get rid of warnings.
+                  texture.magFilter = THREE.NearestFilter;
+                  texture.minFilter = THREE.NearestFilter;
+                  var material = new THREE.MeshPhongMaterial({
+                    map : texture,
+                    specular : 0xcccccc,
+                    shininess : 90,
+                    shading : THREE.FlatShading
+                  });
                   break;
                 case 6:
-                  var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/wood-floor.jpg') } );
+                  var texture = THREE.ImageUtils.loadTexture('images/wood-floor.jpg');
+                  //Filters... to get rid of warnings.
+                  texture.magFilter = THREE.NearestFilter;
+                  texture.minFilter = THREE.NearestFilter;
+                  var material = new THREE.MeshPhongMaterial({
+                    map : texture,
+                    specular : 0xaaaaaa,
+                    shininess : 100,
+                    shading : THREE.FlatShading
+                  });
                   break;
                 default:
-                  var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/bricks.jpg') } );
+                  var texture = THREE.ImageUtils.loadTexture('images/bricks.jpg');
+                  //Filters... to get rid of warnings.
+                  texture.magFilter = THREE.NearestFilter;
+                  texture.minFilter = THREE.NearestFilter;
+                  var material = new THREE.MeshPhongMaterial({
+                    map : texture,
+                    specular : 0xcc0000,
+                    shininess : 5,
+                    shading : THREE.FlatShading
+                  });
               }
             }
             else {
@@ -451,8 +514,6 @@
                                                       this.cube_d, 1, 1, 1 );
                 var material = new THREE.MeshPhongMaterial({
                   color : color,
-                  ambient : color,
-                  diffuse : 0xcccccc,
                   specular : 0xcccccc,
                   shininess : 100,
                   shading : THREE.FlatShading
@@ -852,10 +913,10 @@ function renderAnim() {
 }
 
 function update_deadcells(dt) {
-    var dy = dt*dt*9.8*100;
+    var dy = dt*dt*9.8*2000;
     var direction = new THREE.Vector3(0, -dy, 0);
     // var axis = new THREE.Vector3(1, 0, 0);
-    console.log('delta distance ' + dy);
+    //console.log('delta distance ' + dy);
     var radians = dt * Math.PI/180 * 150;
 
     for (var i = 0; i < deadCells.length; i++) {
@@ -875,7 +936,7 @@ function update_deadcells(dt) {
         scene.updateMatrixWorld(true);
         var position = new THREE.Vector3();
         position.getPositionFromMatrix( cell.matrixWorld );
-        console.log("dead cell y pos " + position.y);
+        //console.log("dead cell y pos " + position.y);
 
         if (position.y < -250) {
             scene.remove(cell);
@@ -1007,7 +1068,7 @@ function ExplodeAnimation(x,y, z)
     if (this.status == true){
         // Sample the first particle
         var particle =  this.object.geometry.vertices[0];
-        if (Math.abs(particle.x - this.object.origVertex.x) > 150) {
+        if (Math.abs(particle.x - this.object.origVertex.x) > 1000) {
             return true;
         } else {
             return false;
