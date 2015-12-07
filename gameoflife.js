@@ -356,10 +356,10 @@
           // draw
           renderer.render(scene, camera);
 
-        //   if (this.run === true) {
-        //     // render again
-        //     this.timeout = setTimeout('Grid.render();', $('#speed').val());
-        //   }
+           if (this.run === true) {
+             // render again
+             this.timeout = setTimeout('Grid.render();', $('#speed').val());
+           }
         },
     add_cell :
         function(x, y, z) {
@@ -564,8 +564,8 @@
               this.timeout = false;
             }
             // start the game
-            Grid.render();
-            //this.timeout = setTimeout('Grid.render();', $('#speed').val());
+            //Grid.render();
+            this.timeout = setTimeout('Grid.render();', $('#speed').val());
           }
         },
     clear_grid: function() {
@@ -778,6 +778,7 @@ $('#reset').click(function () {
   // get rid of the old grid
   Grid.clear_grid();
   delete Grid.map;
+  delete Grid.n_live_neighbours;
   // render the empty grid
   renderer.render(scene, camera);
 
@@ -866,7 +867,7 @@ function animate() {
   var delta_gridupdate = now - lastGridUpdateTime;
 
   if (delta_gridupdate > $('#speed').val()) {
-      Grid.render();
+  //    Grid.render();
       lastGridUpdateTime = now;
   }
 
