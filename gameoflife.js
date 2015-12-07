@@ -995,7 +995,13 @@ function clearParticles() {
       while(pCount--) {
           parts[pCount].removeFromScene();
       }
+    pCount = fallingParts.length;
+      while(pCount--) {
+          fallingParts[pCount].removeFromScene();
+      }
+
       parts = [];
+      fallingParts = []; // TODO: needed?
       renderer.render( scene, camera );
 }
 
